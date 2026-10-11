@@ -52,9 +52,17 @@ header .sub{font-family:"Cormorant Garamond",var(--latin);font-style:italic;font
   margin:0;padding:0 6px 0 0;
   -webkit-overflow-scrolling:touch;
 }
-.cmp-wrap::-webkit-scrollbar{height:8px;width:8px}
-.cmp-wrap::-webkit-scrollbar-track{background:rgba(0,0,0,.4)}
-.cmp-wrap::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold-deep),var(--gold));border-radius:8px}
+.cmp-wrap::-webkit-scrollbar{height:5px;width:5px}
+.cmp-wrap::-webkit-scrollbar-track{background:rgba(212,175,55,.05);border-radius:5px}
+.cmp-wrap::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(255,238,170,.55),rgba(212,175,55,.35) 50%,rgba(138,109,31,.45));
+  border-radius:5px;border:1px solid transparent;background-clip:padding-box;
+  box-shadow:inset 0 1px 0 rgba(255,247,214,.4),inset 0 -1px 0 rgba(60,44,10,.3);
+}
+.cmp-wrap::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,rgba(255,238,170,.75),rgba(212,175,55,.55) 50%,rgba(138,109,31,.6));
+}
+.cmp-wrap::-webkit-scrollbar-corner{background:transparent}
 
 table{border-collapse:separate;border-spacing:0;min-width:880px;width:100%}
 thead th{position:sticky;top:0;z-index:6;background:linear-gradient(180deg,#1c1409,#0e0a06);border-bottom:1px solid var(--gold-line-strong)}
