@@ -108,8 +108,10 @@ td .txt{color:var(--cream)}
 td.col-5,td.col-6,td.col-7{background:rgba(212,175,55,.025)}
 td.col-8,td.col-9{background:rgba(212,175,55,.05)}
 
-/* 滑动提示 */
-.hint{text-align:center;font-family:var(--latin);font-size:10px;letter-spacing:.25em;color:var(--dim);margin:4px 0 8px;flex:0 0 auto}
+/* 底部版权提示 */
+.hint{text-align:center;font-family:var(--serif);font-size:11px;letter-spacing:.2em;color:var(--dim);margin:4px 0 10px;flex:0 0 auto}
+.hint::before{content:"— ";color:var(--gold-deep)}
+.hint::after{content:" —";color:var(--gold-deep)}
 main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
 
 /* ===== 底部二维码 ===== */
@@ -140,7 +142,7 @@ main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
   <div class="cmp-wrap">
     <table id="cmpTable"></table>
   </div>
-  <div class="hint">← 滑动黑金 I→IX · 左列权益项固定 · 逐档对照 →</div>
+  <div class="hint">最终解释权归着迷管理组</div>
 </main>
 
 <script>

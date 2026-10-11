@@ -175,14 +175,19 @@ TIERS=[
            ('拍卖特权',5,['保密出价','拍卖5折'])]},
 ]
 
-# 卡片几何（固定卡片高度，更紧凑）
-GRID_TOP=dy+40
+# 卡片几何（卡片网格在标题与二维码之间垂直居中）
 COLS=3; ROWS=3
 MARGIN_X=60
-GAP=22
+GAP=28
 CARD_W=(W-2*MARGIN_X-(COLS-1)*GAP)//COLS
 CARD_H=430
-GRID_BOTTOM=GRID_TOP+ROWS*CARD_H+(ROWS-1)*GAP
+GRID_H=ROWS*CARD_H+(ROWS-1)*GAP
+HEADER_BOTTOM=dy+24
+QR_PANEL_H=230
+QR_BOTTOM_MARGIN=110
+QR_TOP=H-QR_PANEL_H-QR_BOTTOM_MARGIN
+GRID_TOP=HEADER_BOTTOM+((QR_TOP-HEADER_BOTTOM)-GRID_H)//2
+GRID_BOTTOM=GRID_TOP+GRID_H
 
 def card_pos(i):
     r,c=divmod(i,COLS)
@@ -191,40 +196,66 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """绘制玻璃拟态卡片：半透明深色渐变 + 顶部高光 + 立体边框 + 外发光"""
-    # 外发光（高等级更强）
-    glow_alpha=int(30+i*14)
+    """大气圆滑玻璃卡片：深色渐变 + 顶部高光 + 金色渐变描边 + 内发光 + 外发光"""
+    R=26  # 大圆角
+    # 外层金色光晕（高等级更强，柔化）
+    glow_alpha=int(28+i*12)
     if glow_alpha>0:
-        rrect((x-7,y-7,x+w+7,y+h+7),22,outline=(212,175,55,glow_alpha),w=3)
-    # 基础层：半透明深色渐变
+        glow=Image.new('RGBA',(w+20,h+20),(0,0,0,0))
+        gd=ImageDraw.Draw(glow)
+        gd.rounded_rectangle((6,6,w+14,h+14),radius=R+4,outline=(212,175,55,glow_alpha),width=4)
+        glow=glow.filter(ImageFilter.GaussianBlur(8))
+        canvas.alpha_composite(glow,(x-10,y-10))
+    # 基础层：深色纵向渐变（上深下略亮，沉稳大气）
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(200-tt*35)
-        r=int(22+tt*10); g=int(16+tt*7); b=int(9+tt*5)
+        a=int(215-tt*30)
+        r=int(16+tt*14); g=int(11+tt*9); b=int(5+tt*7)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
-    # 顶部高光带（玻璃反光，更亮）
-    highlight=Image.new('RGBA',(w,h),(0,0,0,0))
-    hd=ImageDraw.Draw(highlight)
-    for yy in range(h//2):
-        tt=yy/(h//2)
-        a=int(70*(1-tt))
-        hd.line([(0,yy),(w,yy)],fill=(255,242,195,a))
-    # 斜向光带（更粗）
-    for k in range(0,w,2):
-        hd.line([(k,0),(k+h//3,h//3)],fill=(255,246,205,6),width=1)
-    base=Image.alpha_composite(base,highlight)
-    # 应用圆角遮罩
+    # 顶部玻璃高光（柔和大弧度反光）
+    hl=Image.new('RGBA',(w,h),(0,0,0,0))
+    hd=ImageDraw.Draw(hl)
+    for yy in range(int(h*0.42)):
+        tt=yy/(h*0.42)
+        a=int(55*(1-tt)**1.5)
+        hd.line([(0,yy),(w,yy)],fill=(255,244,200,a))
+    # 斜向细光带（玻璃质感）
+    for k in range(0,w+h,3):
+        hd.line([(k,0),(k+h//4,h//4)],fill=(255,248,210,5),width=1)
+    base=Image.alpha_composite(base,hl)
+    # 底部微弱内反光
+    refl=Image.new('RGBA',(w,h),(0,0,0,0))
+    rd=ImageDraw.Draw(refl)
+    for yy in range(int(h*0.3)):
+        tt=yy/(h*0.3)
+        a=int(30*tt)
+        rd.line([(0,h-yy),(w,h-yy)],fill=(212,175,55,a))
+    base=Image.alpha_composite(base,refl)
+    # 圆角遮罩
     mask=Image.new('L',(w,h),0)
-    ImageDraw.Draw(mask).rounded_rectangle((0,0,w,h),radius=18,fill=255)
+    ImageDraw.Draw(mask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
     base.putalpha(mask)
     canvas.alpha_composite(base,(x,y))
-    # 立体边框：上左亮、下右暗
-    bd2=ImageDraw.Draw(canvas,'RGBA')
-    bd2.arc((x+2,y+2,x+w-2,y+h-2),180,360,fill=(255,238,170,210),width=2)
-    bd2.arc((x+2,y+2,x+w-2,y+h-2),0,180,fill=(60,44,14,180),width=2)
-    bd2.rounded_rectangle((x+1,y+1,x+w-1,y+h-1),radius=17,outline=(212,175,55,150),width=1)
+    # 金色渐变描边（上亮下暗，立体感）
+    border=Image.new('RGBA',(w,h),(0,0,0,0))
+    bdr=ImageDraw.Draw(border)
+    for yy in range(h):
+        tt=yy/max(h-1,1)
+        a=int(220-tt*90)
+        bdr.line([(0,yy),(w,yy)],fill=(255,232,150,a) if tt<0.5 else (120,88,20,a))
+    # 用圆角环描边
+    ring=Image.new('L',(w,h),0)
+    ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=2)
+    border.putalpha(ring)
+    canvas.alpha_composite(border,(x,y))
+    # 内发光（顶部一圈暖光）
+    inner=Image.new('RGBA',(w,h),(0,0,0,0))
+    idr=ImageDraw.Draw(inner)
+    idr.rounded_rectangle((4,4,w-4,h-4),radius=R-2,outline=(255,240,180,30),width=1)
+    inner.putalpha(mask)
+    canvas.alpha_composite(inner,(x,y))
 
 for i,t in enumerate(TIERS):
     x,y=card_pos(i)
@@ -268,11 +299,11 @@ for i,t in enumerate(TIERS):
         rep='  ·  '.join(reps)
         txt(x+48,cy+bh1+5,rep,SANS(15,'Medium'),CREAM,'la',shadow=True)
 
-# ===== 底部二维码（放大）=====
-qr_panel_h=200
-qr_top=H-qr_panel_h-120
+# ===== 底部二维码区域 =====
+qr_panel_h=QR_PANEL_H
+qr_top=QR_TOP
 
-# ===== 装饰分隔（卡片与二维码之间的留白点缀）=====
+# ===== 装饰分隔（卡片与二维码之间）=====
 mid_y=(GRID_BOTTOM+qr_top)//2
 draw.line([(CX-200,mid_y),(CX-34,mid_y)],fill=(212,175,55,150),width=1)
 draw.line([(CX+34,mid_y),(CX+200,mid_y)],fill=(212,175,55,150),width=1)
@@ -280,17 +311,69 @@ draw.polygon([(CX,mid_y-9),(CX+9,mid_y),(CX,mid_y+9),(CX-9,mid_y)],fill=(212,175
 motto='NOBILITAS · AURUM · NIGRA'
 txt(CX,mid_y+32,motto,LATIN(20,'sans'),MUTED,'ma')
 
-rrect((W//2-300,qr_top,W//2+300,qr_top+qr_panel_h),14,fill=(12,8,4,180),outline=(212,175,55,160),w=2)
-qr_size=150
+# 二维码面板（深色玻璃 + 金色渐变描边）
+panel_x1,panel_x2=W//2-320,W//2+320
+panel=Image.new('RGBA',(panel_x2-panel_x1,qr_panel_h),(0,0,0,0))
+pd=ImageDraw.Draw(panel)
+for yy in range(qr_panel_h):
+    tt=yy/max(qr_panel_h-1,1)
+    a=int(185-tt*25)
+    pd.line([(0,yy),(panel_x2-panel_x1,yy)],fill=(14,9,4,a))
+pmask=Image.new('L',(panel_x2-panel_x1,qr_panel_h),0)
+ImageDraw.Draw(pmask).rounded_rectangle((0,0,panel_x2-panel_x1,qr_panel_h),radius=18,fill=255)
+panel.putalpha(pmask)
+canvas.alpha_composite(panel,(panel_x1,qr_top))
+# 面板金色描边
+pbdr=Image.new('RGBA',(panel_x2-panel_x1,qr_panel_h),(0,0,0,0))
+pbd=ImageDraw.Draw(pbdr)
+for yy in range(qr_panel_h):
+    tt=yy/max(qr_panel_h-1,1)
+    pbd.line([(0,yy),(panel_x2-panel_x1,yy)],fill=(255,232,150,int(200-tt*80)))
+pring=Image.new('L',(panel_x2-panel_x1,qr_panel_h),0)
+ImageDraw.Draw(pring).rounded_rectangle((0,0,panel_x2-panel_x1,qr_panel_h),radius=18,outline=255,width=2)
+pbdr.putalpha(pring)
+canvas.alpha_composite(pbdr,(panel_x1,qr_top))
+
+# 美化二维码：白色圆角底 + 金色渐变描边 + 外发光
+qr_size=156
 qr_img=Image.open(QR).convert('RGBA').resize((qr_size,qr_size),Image.LANCZOS)
-qcx=W//2-90; qcy=qr_top+(qr_panel_h-qr_size)//2
-rrect((qcx-qr_size//2-10,qcy-10,qcx+qr_size//2+10,qcy+qr_size+10),8,fill=(248,240,216))
-canvas.alpha_composite(qr_img,(int(qcx-qr_size//2),int(qcy)))
-rrect((qcx-qr_size//2-10,qcy-10,qcx+qr_size//2+10,qcy+qr_size+10),8,outline=(212,175,55,255),w=2)
-tx=W//2+28
-txt(tx,qr_top+qr_panel_h//2-30,'扫码查看',CJK(26,'Bold'),GOLD,'la')
-txt(tx,qr_top+qr_panel_h//2+6,'完整九阶权益',CJK(20,'Medium'),CREAM,'la')
-txt(tx,qr_top+qr_panel_h//2+36,'zhaomivip.github.io',LATIN(16,'sans'),MUTED,'la')
+pad=14
+qb_w=qr_size+2*pad
+qcx=W//2-110; qcy=qr_top+(qr_panel_h-qb_w)//2
+# 二维码外发光
+qrglow=Image.new('RGBA',(qb_w+30,qb_w+30),(0,0,0,0))
+ImageDraw.Draw(qrglow).rounded_rectangle((15,15,qb_w+15,qb_w+15),radius=20,outline=(212,175,55,160),width=6)
+qrglow=qrglow.filter(ImageFilter.GaussianBlur(10))
+canvas.alpha_composite(qrglow,(int(qcx-qb_w//2-15),int(qcy-15)))
+# 白色圆角底 + 金色渐变描边
+qbbox=(qcx-qb_w//2,qcy,qcx+qb_w//2,qcy+qb_w)
+qbg=Image.new('RGBA',(qb_w,qb_w),(0,0,0,0))
+qbd=ImageDraw.Draw(qbg)
+for yy in range(qb_w):
+    tt=yy/max(qb_w-1,1)
+    qbd.line([(0,yy),(qb_w,yy)],fill=(252,246,228,255))
+qmask=Image.new('L',(qb_w,qb_w),0)
+ImageDraw.Draw(qmask).rounded_rectangle((0,0,qb_w,qb_w),radius=16,fill=255)
+qbg.putalpha(qmask)
+canvas.alpha_composite(qbg,(qcx-qb_w//2,qcy))
+# 二维码图案
+canvas.alpha_composite(qr_img,(int(qcx-qr_size//2),int(qcy+pad)))
+# 金色渐变描边
+qbrd=Image.new('RGBA',(qb_w,qb_w),(0,0,0,0))
+qbdd=ImageDraw.Draw(qbrd)
+for yy in range(qb_w):
+    tt=yy/max(qb_w-1,1)
+    qbdd.line([(0,yy),(qb_w,yy)],fill=(255,232,150,255) if tt<0.5 else (150,110,25,255))
+qbring=Image.new('L',(qb_w,qb_w),0)
+ImageDraw.Draw(qbring).rounded_rectangle((0,0,qb_w,qb_w),radius=16,outline=255,width=3)
+qbrd.putalpha(qbring)
+canvas.alpha_composite(qbrd,(qcx-qb_w//2,qcy))
+
+# 右侧文字
+tx=W//2+30
+txt(tx,qr_top+qr_panel_h//2-34,'扫码查看',CJK(28,'Bold'),GOLD,'la')
+txt(tx,qr_top+qr_panel_h//2+2,'完整九阶权益',CJK(21,'Medium'),CREAM,'la')
+txt(tx,qr_top+qr_panel_h//2+34,'zhaomivip.github.io',LATIN(17,'sans'),MUTED,'la')
 
 # 四角装饰
 def corner(cx,cy,sx,sy):
