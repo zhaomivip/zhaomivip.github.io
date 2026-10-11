@@ -138,22 +138,37 @@ for ch in title:
     gold_text(ccx,ty,ch,tf,'ma')
     gx+=cw+SPACING
 
-sub='九阶黑金 · 逐档尊享'
+sub_left='九阶黑金'
+sub_right='逐档尊贵'
 sf=ART(46,'xiaowei')
-sub_sp=12
-sub_w=sum(tsize(ch,sf)[0] for ch in sub)+sub_sp*(len(sub)-1)
-sx0=CX-sub_w//2
-sub_y=ty+tsize(title,tf)[1]+34    # 拉大字距
+sub_sp=10
+# 计算两段宽度
+lw=sum(tsize(ch,sf)[0] for ch in sub_left)+sub_sp*(len(sub_left)-1)
+rw=sum(tsize(ch,sf)[0] for ch in sub_right)+sub_sp*(len(sub_right)-1)
+gap=40  # 中间菱形间距
+sub_total_w=lw+gap+rw
+sx0=CX-sub_total_w//2
+sub_y=ty+tsize(title,tf)[1]+34
+# 左段
 sx=sx0
-for ch in sub:
+for ch in sub_left:
+    cw,_=tsize(ch,sf)
+    gold_text(sx+cw//2,sub_y,ch,sf,'ma')
+    sx+=cw+sub_sp
+# 中间菱形（手绘，避免字体缺字）
+dia_x=sx0+lw+gap//2
+draw.polygon([(dia_x,sub_y-10),(dia_x+8,sub_y),(dia_x,sub_y+10),(dia_x-8,sub_y)],fill=(212,175,55,235))
+# 右段
+sx=sx0+lw+gap
+for ch in sub_right:
     cw,_=tsize(ch,sf)
     gold_text(sx+cw//2,sub_y,ch,sf,'ma')
     sx+=cw+sub_sp
 
-# 英文副标题：手写花体英文（Great Vibes）
+# 英文副标题：手写花体英文（Great Vibes），下移+加大
 lead='Black Gold Nobility · Nine Tiers'
-lf=SCRIPT(46,'great')
-ly=sub_y+tsize(sub,sf)[1]+26
+lf=SCRIPT(58,'great')
+ly=sub_y+tsize(sub_left,sf)[1]+40
 txt(CX,ly,lead,lf,GOLD,'ma')
 
 dy=ly+30
