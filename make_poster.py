@@ -113,28 +113,28 @@ draw.line([(CX-ew//2-50,ey_y+eh//2),(CX-ew//2-14,ey_y+eh//2)],fill=(212,175,55,2
 draw.line([(CX+ew//2+14,ey_y+eh//2),(CX+ew//2+50,ey_y+eh//2)],fill=(212,175,55,200),width=2)
 
 title='着迷黑金贵族体系'
-tf=ART(138,'xiaowei')   # 站酷小薇艺术字体
-ty=ey_y+eh+34            # 拉大字距，向下分布
-SPACING=12
+tf=ART(156,'xiaowei')   # 站酷小薇艺术字体（加大）
+ty=ey_y+eh+52            # 再下移，向下分布
+SPACING=14
 title_w=sum(tsize(ch,tf)[0] for ch in title)+SPACING*(len(title)-1)
 tx0=CX-title_w//2
 # 标题金色光晕
-glow=Image.new('RGBA',(W,420),(0,0,0,0))
+glow=Image.new('RGBA',(W,460),(0,0,0,0))
 gd=ImageDraw.Draw(glow)
 gx=tx0
 for ch in title:
     cw,_=tsize(ch,tf)
-    gd.text((gx,210-ty),ch,font=tf,fill=(212,175,55,135),anchor='la')
+    gd.text((gx,230-ty),ch,font=tf,fill=(212,175,55,140),anchor='la')
     gx+=cw+SPACING
-glow=glow.filter(ImageFilter.GaussianBlur(26))
-canvas.alpha_composite(glow,(0,ty-210))
+glow=glow.filter(ImageFilter.GaussianBlur(28))
+canvas.alpha_composite(glow,(0,ty-230))
 # 逐字绘制：投影 + 金色描边 + 金色渐变填充
 gx=tx0
 for ch in title:
     cw,chh=tsize(ch,tf)
     ccx=gx+cw//2
-    draw.text((ccx+3,ty+3),ch,font=tf,fill=(0,0,0,170),anchor='ma')
-    draw.text((ccx,ty),ch,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=3,stroke_fill=(110,82,18,235))
+    draw.text((ccx+4,ty+4),ch,font=tf,fill=(0,0,0,175),anchor='ma')
+    draw.text((ccx,ty),ch,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=4,stroke_fill=(110,82,18,235))
     gold_text(ccx,ty,ch,tf,'ma')
     gx+=cw+SPACING
 
@@ -232,7 +232,7 @@ COLS=3; ROWS=3
 MARGIN_X=60
 GAP=28
 CARD_W=(W-2*MARGIN_X-(COLS-1)*GAP)//COLS
-CARD_H=430
+CARD_H=516
 GRID_H=ROWS*CARD_H+(ROWS-1)*GAP
 HEADER_BOTTOM=dy+16
 QR_PANEL_H=290
@@ -264,13 +264,13 @@ def glass_card(x,y,w,h,i):
         gd.rounded_rectangle((9,9,w+21,h+21),radius=R+6,outline=(212,175,55,glow_alpha),width=5)
         glow=glow.filter(ImageFilter.GaussianBlur(13))
         canvas.alpha_composite(glow,(x-15,y-15))
-    # 基础层：高通透深色渐变（水润玻璃，降低不透明度）
+    # 基础层：极高通透深色渐变（半透明玻璃，背景花纹可透出）
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(150-tt*20)            # 更通透
-        r=int(20+tt*18); g=int(14+tt*13); b=int(7+tt*11)
+        a=int(78-tt*18)            # 大幅降低不透明度，透出背景
+        r=int(26+tt*22); g=int(18+tt*16); b=int(9+tt*14)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
     # 水面弧形高光（宽域穹顶反光，水润感）
     hl=Image.new('RGBA',(w,h),(0,0,0,0))
