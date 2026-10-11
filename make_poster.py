@@ -35,6 +35,7 @@ CJK_MAP={'Black':'NotoSerifCJK-Black.ttc','Bold':'NotoSerifCJK-Bold.ttc','SemiBo
 SANS_MAP={'Regular':'NotoSansCJK-Regular.ttc','Medium':'NotoSansCJK-Medium.ttc','Bold':'NotoSansCJK-Bold.ttc'}
 LATIN_MAP={'display':'NotoSerifDisplay-CondensedExtraBold.ttf','sans':'NotoSans-CondensedBold.ttf'}
 ART_MAP={'xiaowei':'ZCOOLXiaoWei.ttf','kuaile':'ZCOOLKuaiLe.ttf'}
+SCRIPT_MAP={'great':'GreatVibes-Regular.ttf','dance':'DancingScript-Bold.ttf'}
 
 def _load(size, name_map, weight):
     fn=name_map[weight]
@@ -52,6 +53,7 @@ def CJK(size,weight='Black'):  return _load(size,CJK_MAP,weight)
 def SANS(size,weight='Regular'): return _load(size,SANS_MAP,weight)
 def LATIN(size,style='display'): return _load(size,LATIN_MAP,style)
 def ART(size,style='xiaowei'): return _load(size,ART_MAP,style)
+def SCRIPT(size,style='great'): return _load(size,SCRIPT_MAP,style)
 
 # 关键资源检查
 for label,p in [('背景图',SRC),('二维码',QR)]:
@@ -102,7 +104,7 @@ def txt(x,y,text,font,fill,anchor='la',shadow=False):
 
 CX=W//2
 
-# ===== 标题区（艺术字体 + 下移减少空白）=====
+# ===== 标题区（艺术字体 + 分布填充与卡片间空隙）=====
 ey='NOBILITAS · AURUM · NIGRA'
 ef=LATIN(30,'display'); ew,eh=tsize(ey,ef)
 ey_y=178
@@ -112,8 +114,7 @@ draw.line([(CX+ew//2+14,ey_y+eh//2),(CX+ew//2+50,ey_y+eh//2)],fill=(212,175,55,2
 
 title='着迷黑金贵族体系'
 tf=ART(138,'xiaowei')   # 站酷小薇艺术字体
-ty=ey_y+eh+20
-# 标题字距（艺术化拉开）
+ty=ey_y+eh+34            # 拉大字距，向下分布
 SPACING=12
 title_w=sum(tsize(ch,tf)[0] for ch in title)+SPACING*(len(title)-1)
 tx0=CX-title_w//2
@@ -142,19 +143,20 @@ sf=ART(46,'xiaowei')
 sub_sp=12
 sub_w=sum(tsize(ch,sf)[0] for ch in sub)+sub_sp*(len(sub)-1)
 sx0=CX-sub_w//2
-sub_y=ty+tsize(title,tf)[1]+16
+sub_y=ty+tsize(title,tf)[1]+34    # 拉大字距
 sx=sx0
 for ch in sub:
     cw,_=tsize(ch,sf)
     gold_text(sx+cw//2,sub_y,ch,sf,'ma')
     sx+=cw+sub_sp
 
-lead='BLACK GOLD NOBILITY · NINE TIERS'
-lf=LATIN(24,'sans')
-ly=sub_y+tsize(sub,sf)[1]+20
-txt(CX,ly,lead,lf,MUTED,'ma')
+# 英文副标题：手写花体英文（Great Vibes）
+lead='Black Gold Nobility · Nine Tiers'
+lf=SCRIPT(46,'great')
+ly=sub_y+tsize(sub,sf)[1]+26
+txt(CX,ly,lead,lf,GOLD,'ma')
 
-dy=ly+36
+dy=ly+30
 # 标题分隔线（两端菱形端饰）
 draw.line([(150,dy),(CX-16,dy)],fill=(212,175,55,130),width=1)
 draw.line([(CX+16,dy),(W-150,dy)],fill=(212,175,55,130),width=1)
@@ -217,9 +219,9 @@ GAP=28
 CARD_W=(W-2*MARGIN_X-(COLS-1)*GAP)//COLS
 CARD_H=430
 GRID_H=ROWS*CARD_H+(ROWS-1)*GAP
-HEADER_BOTTOM=dy+24
+HEADER_BOTTOM=dy+16
 QR_PANEL_H=290
-QR_BOTTOM_MARGIN=100
+QR_BOTTOM_MARGIN=30
 QR_TOP=H-QR_PANEL_H-QR_BOTTOM_MARGIN
 GRID_TOP=HEADER_BOTTOM+((QR_TOP-HEADER_BOTTOM)-GRID_H)//2
 GRID_BOTTOM=GRID_TOP+GRID_H
@@ -231,8 +233,14 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """玻璃水润卡片：高通透 + 水面弧形高光 + 镜面反射带 + 水润斜射光 + 立体棱边"""
+    """玻璃水润悬浮卡片：投影悬浮 + 高通透 + 水面高光 + 镜面反射带 + 立体棱边"""
     R=32  # 更大圆角，水滴圆润
+    # 悬浮投影（卡片下方柔化阴影，营造悬浮感）
+    shadow=Image.new('RGBA',(w+24,h+30),(0,0,0,0))
+    sd=ImageDraw.Draw(shadow)
+    sd.rounded_rectangle((12,16,w+12,h+16),radius=R,fill=(0,0,0,120))
+    shadow=shadow.filter(ImageFilter.GaussianBlur(14))
+    canvas.alpha_composite(shadow,(x-12,y-8))
     # 外层金色光晕（高等级更强，柔化）
     glow_alpha=int(32+i*13)
     if glow_alpha>0:
@@ -316,12 +324,6 @@ for i,t in enumerate(TIERS):
     x,y=card_pos(i)
     cx=x+CARD_W//2
     glass_card(x,y,CARD_W,CARD_H,i)
-    if i==8:
-        badge='至 尊'
-        bf=CJK(15,'Bold')
-        bw,bh=tsize(badge,bf)
-        rrect((cx-bw//2-10,y-12,cx+bw//2+10,y+12),8,fill=(212,175,55,255))
-        txt(cx,y,badge,bf,(10,7,3),'mm')
 
     # 头部：黑金 Ⅰ（大字体饱满 + 金色描边）
     tier_title=f'黑金 {t["id"]}'
@@ -417,9 +419,8 @@ canvas.alpha_composite(qbrd,(qcx-qb_w//2,qcy))
 
 # 右侧文字（放大）
 tx=W//2+40
-txt(tx,qr_top+qr_panel_h//2-44,'扫码查看',CJK(34,'Bold'),GOLD,'la')
-txt(tx,qr_top+qr_panel_h//2+2,'完整九阶权益',CJK(26,'Medium'),CREAM,'la')
-txt(tx,qr_top+qr_panel_h//2+42,'zhaomivip.github.io',LATIN(20,'sans'),MUTED,'la')
+txt(tx,qr_top+qr_panel_h//2-34,'扫码查看完整',CJK(32,'Bold'),GOLD,'la')
+txt(tx,qr_top+qr_panel_h//2+10,'黑金贵族权益',CJK(32,'Bold'),GOLD,'la')
 
 # 整体金边（外框+内细线，双层优雅）
 PAD=42
