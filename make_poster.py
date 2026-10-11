@@ -1,23 +1,59 @@
 # -*- coding: utf-8 -*-
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import math
+import os, sys, glob
 
 W,H = 1350,3150
-SRC='/workspace/zmvip-site/assets/poster-bg-portrait2.jpg'
-QR='/workspace/zmvip-site/assets/qr.png'
-OUT='/workspace/zmvip-site/assets/poster_blackgold.jpg'
+BASE=os.path.dirname(os.path.abspath(__file__))
+ASSETS=os.path.join(BASE,'assets')
+SRC=os.path.join(ASSETS,'poster-bg-portrait2.jpg')
+QR=os.path.join(ASSETS,'qr.png')
+OUT=os.path.join(ASSETS,'poster_blackgold.jpg')
 
-FD='/usr/share/fonts/opentype/noto'
-def CJK(size,weight='Black'):
-    fn={'Black':'NotoSerifCJK-Black.ttc','Bold':'NotoSerifCJK-Bold.ttc','SemiBold':'NotoSerifCJK-SemiBold.ttc','Medium':'NotoSerifCJK-Medium.ttc','Regular':'NotoSerifCJK-Regular.ttc'}[weight]
-    return ImageFont.truetype(f'{FD}/{fn}',size)
-def SANS(size,weight='Regular'):
-    fn={'Regular':'NotoSansCJK-Regular.ttc','Medium':'NotoSansCJK-Medium.ttc','Bold':'NotoSansCJK-Bold.ttc'}[weight]
-    return ImageFont.truetype(f'{FD}/{fn}',size)
-def LATIN(size,style='display'):
-    path={'display':'/usr/share/fonts/truetype/noto/NotoSerifDisplay-CondensedExtraBold.ttf',
-          'sans':'/usr/share/fonts/truetype/noto/NotoSans-CondensedBold.ttf'}[style]
-    return ImageFont.truetype(path,size)
+# 字体搜索路径（跨平台）：Linux / macOS / Windows 常见位置
+FONT_DIRS=[
+    '/usr/share/fonts/opentype/noto',
+    '/usr/share/fonts/truetype/noto',
+    '/usr/share/fonts/opentype',
+    '/usr/share/fonts/truetype',
+    '/System/Library/Fonts',
+    '/Library/Fonts',
+    'C:/Windows/Fonts',
+]
+def find_font(name):
+    """在多个字体目录中查找字体文件，找不到则返回 None"""
+    for d in FONT_DIRS:
+        p=os.path.join(d,name)
+        if os.path.isfile(p): return p
+    # 递归兜底搜索
+    for d in FONT_DIRS:
+        for p in glob.glob(os.path.join(d,'**',name),recursive=True):
+            if os.path.isfile(p): return p
+    return None
+
+CJK_MAP={'Black':'NotoSerifCJK-Black.ttc','Bold':'NotoSerifCJK-Bold.ttc','SemiBold':'NotoSerifCJK-SemiBold.ttc','Medium':'NotoSerifCJK-Medium.ttc','Regular':'NotoSerifCJK-Regular.ttc'}
+SANS_MAP={'Regular':'NotoSansCJK-Regular.ttc','Medium':'NotoSansCJK-Medium.ttc','Bold':'NotoSansCJK-Bold.ttc'}
+LATIN_MAP={'display':'NotoSerifDisplay-CondensedExtraBold.ttf','sans':'NotoSans-CondensedBold.ttf'}
+
+def _load(size, name_map, weight):
+    fn=name_map[weight]
+    p=find_font(fn)
+    if p: return ImageFont.truetype(p,size)
+    # 降级：尝试任意 CJK 字体
+    for cand in name_map.values():
+        p=find_font(cand)
+        if p: return ImageFont.truetype(p,size)
+    # 最终降级到 PIL 默认
+    print(f'[warn] 未找到字体 {fn}，使用默认字体', file=sys.stderr)
+    return ImageFont.load_default()
+
+def CJK(size,weight='Black'):  return _load(size,CJK_MAP,weight)
+def SANS(size,weight='Regular'): return _load(size,SANS_MAP,weight)
+def LATIN(size,style='display'): return _load(size,LATIN_MAP,style)
+
+# 关键资源检查
+for label,p in [('背景图',SRC),('二维码',QR)]:
+    if not os.path.isfile(p):
+        print(f'[error] 缺少{label}：{p}', file=sys.stderr); sys.exit(1)
 
 GOLD_HI=(255,247,214); GOLD=(247,224,138); GOLD_DK=(138,109,31)
 CREAM=(244,236,216); MUTED=(185,169,138); DIM=(92,80,64)
