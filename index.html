@@ -129,16 +129,11 @@ td.col-8,td.col-9{background:rgba(212,175,55,.05)}
 .hint::before{content:"— ";color:var(--gold-deep)}
 .hint::after{content:" —";color:var(--gold-deep)}
 
-/* 备注说明 */
-.notes{margin:18px 14px 6px;padding:16px 18px;border:1px solid var(--gold-line-strong);border-radius:10px;
-  background:linear-gradient(180deg,rgba(28,20,9,.7),rgba(14,9,4,.7));box-shadow:0 0 18px rgba(212,175,55,.06) inset;flex:0 0 auto}
-.notes-title{font-family:var(--serif);font-size:15px;color:var(--gold);letter-spacing:.25em;text-align:center;margin:0 0 12px;
-  background:linear-gradient(180deg,#fff7d6,#ffe9a8 45%,var(--gold) 75%,var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
-.notes-title::before{content:"◆ ";color:var(--gold-deep);font-size:10px;vertical-align:middle}
-.notes-title::after{content:" ◆";color:var(--gold-deep);font-size:10px;vertical-align:middle}
-.notes-list{margin:0;padding-left:22px;font-family:var(--serif);font-size:12px;line-height:1.9;color:var(--cream)}
-.notes-list li{margin-bottom:4px}
-.notes-list li::marker{color:var(--gold)}
+/* 备注说明（极简紧凑） */
+.notes{margin:6px 14px 0;padding:0;flex:0 0 auto;text-align:left}
+.notes-title{font-family:var(--serif);font-size:9px;color:var(--gold-deep);letter-spacing:.1em;margin:0;line-height:1.2}
+.notes-list{margin:0;padding-left:0;font-family:var(--serif);font-size:9px;line-height:1.2;color:var(--dim);list-style:none}
+.notes-list li{margin:0;padding:0;line-height:1.2}
 main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
 
 /* ===== 底部二维码 ===== */
