@@ -11,6 +11,7 @@ OUT=os.path.join(ASSETS,'poster_blackgold.jpg')
 
 # 字体搜索路径（跨平台）：Linux / macOS / Windows 常见位置
 FONT_DIRS=[
+    os.path.join(ASSETS,'fonts'),
     '/usr/share/fonts/opentype/noto',
     '/usr/share/fonts/truetype/noto',
     '/usr/share/fonts/opentype',
@@ -33,6 +34,7 @@ def find_font(name):
 CJK_MAP={'Black':'NotoSerifCJK-Black.ttc','Bold':'NotoSerifCJK-Bold.ttc','SemiBold':'NotoSerifCJK-SemiBold.ttc','Medium':'NotoSerifCJK-Medium.ttc','Regular':'NotoSerifCJK-Regular.ttc'}
 SANS_MAP={'Regular':'NotoSansCJK-Regular.ttc','Medium':'NotoSansCJK-Medium.ttc','Bold':'NotoSansCJK-Bold.ttc'}
 LATIN_MAP={'display':'NotoSerifDisplay-CondensedExtraBold.ttf','sans':'NotoSans-CondensedBold.ttf'}
+ART_MAP={'xiaowei':'ZCOOLXiaoWei.ttf','kuaile':'ZCOOLKuaiLe.ttf'}
 
 def _load(size, name_map, weight):
     fn=name_map[weight]
@@ -49,6 +51,7 @@ def _load(size, name_map, weight):
 def CJK(size,weight='Black'):  return _load(size,CJK_MAP,weight)
 def SANS(size,weight='Regular'): return _load(size,SANS_MAP,weight)
 def LATIN(size,style='display'): return _load(size,LATIN_MAP,style)
+def ART(size,style='xiaowei'): return _load(size,ART_MAP,style)
 
 # 关键资源检查
 for label,p in [('背景图',SRC),('二维码',QR)]:
@@ -99,20 +102,19 @@ def txt(x,y,text,font,fill,anchor='la',shadow=False):
 
 CX=W//2
 
-# ===== 标题区（放大）=====
+# ===== 标题区（艺术字体 + 下移减少空白）=====
 ey='NOBILITAS · AURUM · NIGRA'
 ef=LATIN(30,'display'); ew,eh=tsize(ey,ef)
-ey_y=116
+ey_y=178
 txt(CX,ey_y,ey,ef,GOLD,'ma')
 draw.line([(CX-ew//2-50,ey_y+eh//2),(CX-ew//2-14,ey_y+eh//2)],fill=(212,175,55,200),width=2)
 draw.line([(CX+ew//2+14,ey_y+eh//2),(CX+ew//2+50,ey_y+eh//2)],fill=(212,175,55,200),width=2)
 
 title='着迷黑金贵族体系'
-tf=CJK(140,'Black')
-ty=ey_y+eh+22
+tf=ART(138,'xiaowei')   # 站酷小薇艺术字体
+ty=ey_y+eh+20
 # 标题字距（艺术化拉开）
-SPACING=14
-# 计算带字距的总宽
+SPACING=12
 title_w=sum(tsize(ch,tf)[0] for ch in title)+SPACING*(len(title)-1)
 tx0=CX-title_w//2
 # 标题金色光晕
@@ -121,29 +123,26 @@ gd=ImageDraw.Draw(glow)
 gx=tx0
 for ch in title:
     cw,_=tsize(ch,tf)
-    gd.text((gx,210-ty),ch,font=tf,fill=(212,175,55,130),anchor='la')
+    gd.text((gx,210-ty),ch,font=tf,fill=(212,175,55,135),anchor='la')
     gx+=cw+SPACING
-glow=glow.filter(ImageFilter.GaussianBlur(24))
+glow=glow.filter(ImageFilter.GaussianBlur(26))
 canvas.alpha_composite(glow,(0,ty-210))
-# 逐字绘制：深色投影 + 金色描边 + 金色渐变填充
+# 逐字绘制：投影 + 金色描边 + 金色渐变填充
 gx=tx0
 for ch in title:
     cw,chh=tsize(ch,tf)
     ccx=gx+cw//2
-    # 投影
-    draw.text((ccx+3,ty+3),ch,font=tf,fill=(0,0,0,160),anchor='ma')
-    # 金色描边
-    draw.text((ccx,ty),ch,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=3,stroke_fill=(120,88,20,230))
-    # 金色渐变填充
+    draw.text((ccx+3,ty+3),ch,font=tf,fill=(0,0,0,170),anchor='ma')
+    draw.text((ccx,ty),ch,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=3,stroke_fill=(110,82,18,235))
     gold_text(ccx,ty,ch,tf,'ma')
     gx+=cw+SPACING
 
 sub='九阶黑金 · 逐档尊享'
-sf=CJK(44,'SemiBold')
-sub_sp=10
+sf=ART(46,'xiaowei')
+sub_sp=12
 sub_w=sum(tsize(ch,sf)[0] for ch in sub)+sub_sp*(len(sub)-1)
 sx0=CX-sub_w//2
-sub_y=ty+tsize(title,tf)[1]+18
+sub_y=ty+tsize(title,tf)[1]+16
 sx=sx0
 for ch in sub:
     cw,_=tsize(ch,sf)
@@ -232,43 +231,47 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """水晶凸起玻璃卡片：通透渐变 + 弧形穹顶高光 + 立体斜面描边 + 内外发光"""
-    R=30  # 更大圆角，水晶圆润
+    """玻璃水润卡片：高通透 + 水面弧形高光 + 镜面反射带 + 水润斜射光 + 立体棱边"""
+    R=32  # 更大圆角，水滴圆润
     # 外层金色光晕（高等级更强，柔化）
     glow_alpha=int(32+i*13)
     if glow_alpha>0:
-        glow=Image.new('RGBA',(w+28,h+28),(0,0,0,0))
+        glow=Image.new('RGBA',(w+30,h+30),(0,0,0,0))
         gd=ImageDraw.Draw(glow)
-        gd.rounded_rectangle((8,8,w+20,h+20),radius=R+6,outline=(212,175,55,glow_alpha),width=5)
-        glow=glow.filter(ImageFilter.GaussianBlur(12))
-        canvas.alpha_composite(glow,(x-14,y-14))
-    # 基础层：通透深色纵向渐变（水晶玻璃感，降低不透明度）
+        gd.rounded_rectangle((9,9,w+21,h+21),radius=R+6,outline=(212,175,55,glow_alpha),width=5)
+        glow=glow.filter(ImageFilter.GaussianBlur(13))
+        canvas.alpha_composite(glow,(x-15,y-15))
+    # 基础层：高通透深色渐变（水润玻璃，降低不透明度）
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(190-tt*25)
-        r=int(18+tt*16); g=int(12+tt*11); b=int(6+tt*9)
+        a=int(150-tt*20)            # 更通透
+        r=int(20+tt*18); g=int(14+tt*13); b=int(7+tt*11)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
-    # 弧形穹顶高光（水晶凸起的顶部反光，宽而柔和）
+    # 水面弧形高光（宽域穹顶反光，水润感）
     hl=Image.new('RGBA',(w,h),(0,0,0,0))
     hd=ImageDraw.Draw(hl)
-    for yy in range(int(h*0.5)):
-        # 弧形：中间高两边低，模拟穹顶反光
-        edge=yy/(h*0.5)
-        curve=1-(edge-0.5)**2*2.2
-        a=int(70*max(curve,0)*(1-edge)**1.2)
-        hd.line([(0,yy),(w,yy)],fill=(255,246,205,a))
-    # 斜向细光带（玻璃折射）
-    for k in range(-h,w+h,4):
-        hd.line([(k,0),(k+h//3,h//3)],fill=(255,250,215,6),width=1)
+    for yy in range(int(h*0.55)):
+        edge=yy/(h*0.55)
+        curve=1-(edge-0.45)**2*2.6
+        a=int(90*max(curve,0)*(1-edge)**1.1)
+        hd.line([(0,yy),(w,yy)],fill=(255,250,225,a))
+    # 镜面高光带（水面反光的亮带，水润关键）
+    for yy in range(int(h*0.12)):
+        tt=yy/(h*0.12)
+        a=int(55*(1-tt)**2)
+        hd.line([(w*0.15,yy+int(h*0.06)),(w*0.85,yy+int(h*0.06))],fill=(255,255,240,a))
+    # 水润斜射光带（细密折射）
+    for k in range(-h,w+h,3):
+        hd.line([(k,0),(k+h//3,h//3)],fill=(255,252,225,5),width=1)
     base=Image.alpha_composite(base,hl)
-    # 底部微弱金色内反光
+    # 底部金色水面反光
     refl=Image.new('RGBA',(w,h),(0,0,0,0))
     rd=ImageDraw.Draw(refl)
-    for yy in range(int(h*0.32)):
-        tt=yy/(h*0.32)
-        a=int(38*tt)
+    for yy in range(int(h*0.38)):
+        tt=yy/(h*0.38)
+        a=int(46*tt)
         rd.line([(0,h-yy),(w,h-yy)],fill=(212,175,55,a))
     base=Image.alpha_composite(base,refl)
     # 圆角遮罩
@@ -276,36 +279,36 @@ def glass_card(x,y,w,h,i):
     ImageDraw.Draw(mask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
     base.putalpha(mask)
     canvas.alpha_composite(base,(x,y))
-    # 立体斜面描边（水晶凸起：上亮下暗，3D 边缘）
+    # 立体棱边描边（上亮下暗，水润凸起）
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(235-tt*100)
-        bdr.line([(0,yy),(w,yy)],fill=(255,238,168,a) if tt<0.5 else (110,82,18,a))
+        a=int(240-tt*110)
+        bdr.line([(0,yy),(w,yy)],fill=(255,242,180,a) if tt<0.5 else (100,74,15,a))
     ring=Image.new('L',(w,h),0)
     ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=3)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
-    # 顶部细亮线（凸起高光棱）
+    # 顶部水润亮棱
     topedge=Image.new('RGBA',(w,h),(0,0,0,0))
     te=ImageDraw.Draw(topedge)
-    te.rounded_rectangle((2,2,w-2,h-2),radius=R-1,outline=(255,248,214,90),width=1)
+    te.rounded_rectangle((2,2,w-2,h-2),radius=R-1,outline=(255,250,225,110),width=1)
     topedge.putalpha(mask)
     canvas.alpha_composite(topedge,(x,y))
-    # 底部内阴影（水晶下沉感）
+    # 底部柔和内阴影
     botsh=Image.new('RGBA',(w,h),(0,0,0,0))
     bs=ImageDraw.Draw(botsh)
-    for yy in range(int(h*0.25)):
-        tt=yy/(h*0.25)
-        a=int(45*(1-tt))
+    for yy in range(int(h*0.28)):
+        tt=yy/(h*0.28)
+        a=int(38*(1-tt))
         bs.line([(0,h-1-yy),(w,h-1-yy)],fill=(0,0,0,a))
     botsh.putalpha(mask)
     canvas.alpha_composite(botsh,(x,y))
-    # 内发光（顶部一圈暖光）
+    # 内圈暖光
     inner=Image.new('RGBA',(w,h),(0,0,0,0))
     idr=ImageDraw.Draw(inner)
-    idr.rounded_rectangle((5,5,w-5,h-5),radius=R-3,outline=(255,242,185,35),width=1)
+    idr.rounded_rectangle((5,5,w-5,h-5),radius=R-3,outline=(255,244,190,30),width=1)
     inner.putalpha(mask)
     canvas.alpha_composite(inner,(x,y))
 
@@ -366,26 +369,15 @@ draw.polygon([(CX,mid_y-9),(CX+9,mid_y),(CX,mid_y+9),(CX-9,mid_y)],fill=(212,175
 motto='NOBILITAS · AURUM · NIGRA'
 txt(CX,mid_y+32,motto,LATIN(20,'sans'),MUTED,'ma')
 
-# 二维码面板（深色玻璃 + 金色渐变描边）
+# 二维码区域：去掉黑色底框，仅保留极淡金色描边作为结构
 panel_x1,panel_x2=W//2-360,W//2+360
-panel=Image.new('RGBA',(panel_x2-panel_x1,qr_panel_h),(0,0,0,0))
-pd=ImageDraw.Draw(panel)
-for yy in range(qr_panel_h):
-    tt=yy/max(qr_panel_h-1,1)
-    a=int(185-tt*25)
-    pd.line([(0,yy),(panel_x2-panel_x1,yy)],fill=(14,9,4,a))
-pmask=Image.new('L',(panel_x2-panel_x1,qr_panel_h),0)
-ImageDraw.Draw(pmask).rounded_rectangle((0,0,panel_x2-panel_x1,qr_panel_h),radius=20,fill=255)
-panel.putalpha(pmask)
-canvas.alpha_composite(panel,(panel_x1,qr_top))
-# 面板金色描边
 pbdr=Image.new('RGBA',(panel_x2-panel_x1,qr_panel_h),(0,0,0,0))
 pbd=ImageDraw.Draw(pbdr)
 for yy in range(qr_panel_h):
     tt=yy/max(qr_panel_h-1,1)
-    pbd.line([(0,yy),(panel_x2-panel_x1,yy)],fill=(255,232,150,int(200-tt*80)))
+    pbd.line([(0,yy),(panel_x2-panel_x1,yy)],fill=(255,232,150,int(120-tt*60)))
 pring=Image.new('L',(panel_x2-panel_x1,qr_panel_h),0)
-ImageDraw.Draw(pring).rounded_rectangle((0,0,panel_x2-panel_x1,qr_panel_h),radius=20,outline=255,width=2)
+ImageDraw.Draw(pring).rounded_rectangle((0,0,panel_x2-panel_x1,qr_panel_h),radius=20,outline=255,width=1)
 pbdr.putalpha(pring)
 canvas.alpha_composite(pbdr,(panel_x1,qr_top))
 
