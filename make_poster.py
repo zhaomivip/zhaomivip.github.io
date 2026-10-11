@@ -114,7 +114,7 @@ draw.line([(CX+ew//2+14,ey_y+eh//2),(CX+ew//2+50,ey_y+eh//2)],fill=(212,175,55,2
 
 title='着迷黑金贵族体系'
 tf=ART(156,'xiaowei')   # 站酷小薇艺术字体（加大）
-ty=ey_y+eh+52            # 再下移，向下分布
+ty=ey_y+eh+200           # 再下移两个行高位置
 SPACING=14
 title_w=sum(tsize(ch,tf)[0] for ch in title)+SPACING*(len(title)-1)
 tx0=CX-title_w//2
@@ -179,6 +179,7 @@ draw.polygon([(CX,dy-6),(CX+6,dy),(CX,dy+6),(CX-6,dy)],fill=(212,175,55,220))
 
 # ===== 九档卡片（3x3）=====
 # 每档按四大类提炼：(项数, [代表权益1, 代表权益2])
+# 原则：每档尽量选上一档没有的、或数值比上一档更高的权益
 TIERS=[
   {'id':'I','wealth':3000,'group':'初阶',
    'cats':[('每月福利',3,['灵石 4,000','粉钻 20']),
@@ -188,7 +189,7 @@ TIERS=[
   {'id':'II','wealth':4500,'group':'初阶',
    'cats':[('每月福利',3,['灵石 7,000','粉钻 30']),
            ('尊享权益',5,['永久无流放','95折']),
-           ('黑金专享',3,['生日 2档','返现 10%']),
+           ('黑金专享',3,['生日 2档','拍卖 95折']),
            ('拍卖特权',0,['—'])]},
   {'id':'III','wealth':6000,'group':'中阶',
    'cats':[('每月福利',3,['灵石 10,000','粉钻 40']),
@@ -197,37 +198,37 @@ TIERS=[
            ('拍卖特权',3,['清单查阅','匿名出价'])]},
   {'id':'IV','wealth':8000,'group':'中阶',
    'cats':[('每月福利',3,['灵石 14,000','粉钻 50']),
-           ('尊享权益',8,['专属C卡','9折']),
+           ('尊享权益',8,['专属 C 卡','9折']),
            ('黑金专享',4,['生日 4档','返现 10%']),
            ('拍卖特权',3,['清单查阅','匿名出价'])]},
   {'id':'V','wealth':10000,'group':'高级',
    'cats':[('每月福利',3,['灵石 17,000','粉钻 60']),
            ('尊享权益',8,['至尊一字','双人认证']),
-           ('黑金专享',7,['专属俱乐部','CP共享']),
-           ('拍卖特权',4,['清单查阅','流拍内购'])]},
+           ('黑金专享',7,['专属俱乐部','CP 共享']),
+           ('拍卖特权',4,['流拍内购','优先出价'])]},
   {'id':'VI','wealth':12000,'group':'高级',
    'cats':[('每月福利',3,['灵石 20,000','粉钻 70']),
-           ('尊享权益',8,['挚友1名','85折']),
-           ('黑金专享',8,['生日电台','包场15首']),
-           ('拍卖特权',4,['清单查阅','流拍内购'])]},
+           ('尊享权益',8,['挚友 1名','85折']),
+           ('黑金专享',8,['生日电台','包场 15首']),
+           ('拍卖特权',4,['流拍内购','保密名额'])]},
   {'id':'VII','wealth':15000,'group':'高级',
    'cats':[('每月福利',3,['灵石 23,000','粉钻 80']),
-           ('尊享权益',8,['挚友1名','85折']),
-           ('黑金专享',8,['返现15%','包场15首']),
-           ('拍卖特权',5,['保密出价','拍卖7折'])]},
+           ('尊享权益',8,['挚友 1名','85折']),
+           ('黑金专享',8,['返现 15%','包场 15首']),
+           ('拍卖特权',5,['保密出价','拍卖 7折'])]},
   {'id':'VIII','wealth':18000,'group':'至尊',
    'cats':[('每月福利',3,['灵石 30,000','粉钻 100']),
-           ('尊享权益',8,['挚友2名','8折']),
-           ('黑金专享',8,['返现20%','包场15首']),
-           ('拍卖特权',5,['保密出价','拍卖6折'])]},
+           ('尊享权益',8,['挚友 2名','8折']),
+           ('黑金专享',8,['返现 20%','包场 15首']),
+           ('拍卖特权',5,['保密出价','拍卖 6折'])]},
   {'id':'IX','wealth':21000,'group':'至尊',
    'cats':[('每月福利',3,['灵石 36,000','粉钻 150']),
-           ('尊享权益',8,['挚友3名','8折']),
-           ('黑金专享',8,['返现20%','包场30首']),
-           ('拍卖特权',5,['保密出价','拍卖5折'])]},
+           ('尊享权益',8,['挚友 3名','8折']),
+           ('黑金专享',8,['返现 20%','包场 30首']),
+           ('拍卖特权',5,['保密出价','拍卖 5折'])]},
 ]
 
-# 卡片几何（卡片网格在标题与二维码之间垂直居中）
+# 卡片几何（卡片网格在标题与二维码之间垂直居中，二维码贴近卡片下方）
 COLS=3; ROWS=3
 MARGIN_X=60
 GAP=28
@@ -236,10 +237,11 @@ CARD_H=516
 GRID_H=ROWS*CARD_H+(ROWS-1)*GAP
 HEADER_BOTTOM=dy+16
 QR_PANEL_H=290
-QR_BOTTOM_MARGIN=30
-QR_TOP=H-QR_PANEL_H-QR_BOTTOM_MARGIN
-GRID_TOP=HEADER_BOTTOM+((QR_TOP-HEADER_BOTTOM)-GRID_H)//2
+# 先用底部估算位计算网格居中，再把二维码上移贴近卡片
+_QR_EST=H-QR_PANEL_H-30
+GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2
 GRID_BOTTOM=GRID_TOP+GRID_H
+QR_TOP=GRID_BOTTOM+55          # 二维码上移，紧贴卡片下方
 
 def card_pos(i):
     r,c=divmod(i,COLS)
@@ -353,38 +355,39 @@ for i,t in enumerate(TIERS):
     draw.line([(x+28,divy),(x+CARD_W-28,divy)],fill=(212,175,55,140),width=1)
     draw.ellipse([(cx-4,divy-4),(cx+4,divy+4)],fill=(212,175,55,220))
 
-    # 四大类权益（均匀分布）
+    # 四大类权益（均匀分布、统一圆润字体、饱满）
     cat_count=len(t['cats'])
-    avail_h=y+CARD_H-divy-20
+    avail_h=y+CARD_H-divy-16
     per_h=avail_h//cat_count
-    by2=divy+14
+    cat_font=CJK(19,'Bold')      # 大类名统一圆润字体
+    cnt_font=CJK(13,'Bold')      # 项数
+    rep_font=CJK(14,'Medium')    # 代表权益
+    chk_font=CJK(19,'Bold')      # 对勾
     for ci,(cat_name,count,reps) in enumerate(t['cats']):
-        cy=divy+14+ci*per_h
-        # 大类行：✓ 大类名 (N项)
+        cy=divy+12+ci*per_h
+        # 大类行
         if count>0:
-            txt(x+22,cy,'✓',SANS(21,'Bold'),GOLD_HI,'la')
-            txt(x+48,cy,cat_name,SANS(21,'Bold'),GOLD,'la')
-            txt(x+CARD_W-22,cy,f'{count}项',SANS(15,'Medium'),GOLD_HI,'ra')
+            txt(x+20,cy,'✓',chk_font,GOLD_HI,'la')
+            txt(x+46,cy,cat_name,cat_font,GOLD,'la')
+            txt(x+CARD_W-20,cy,f'{count}项',cnt_font,GOLD_HI,'ra')
         else:
-            txt(x+22,cy,'—',SANS(21,'Regular'),DIM,'la')
-            txt(x+48,cy,cat_name,SANS(21,'Medium'),DIM,'la')
-            txt(x+CARD_W-22,cy,'—',SANS(15,'Regular'),DIM,'ra')
-        _,bh1=tsize(cat_name,SANS(21,'Bold'))
-        # 代表权益（小字）
+            txt(x+20,cy,'—',chk_font,DIM,'la')
+            txt(x+46,cy,cat_name,cat_font,DIM,'la')
+            txt(x+CARD_W-20,cy,'—',cnt_font,DIM,'ra')
+        _,bh1=tsize(cat_name,cat_font)
+        # 代表权益（两行，饱满分布）
         rep='  ·  '.join(reps)
-        txt(x+48,cy+bh1+5,rep,SANS(15,'Medium'),CREAM,'la',shadow=True)
+        txt(x+46,cy+bh1+7,rep,rep_font,CREAM,'la',shadow=True)
 
 # ===== 底部二维码区域 =====
 qr_panel_h=QR_PANEL_H
 qr_top=QR_TOP
 
-# ===== 装饰分隔（卡片与二维码之间）=====
-mid_y=(GRID_BOTTOM+qr_top)//2
-draw.line([(CX-200,mid_y),(CX-34,mid_y)],fill=(212,175,55,150),width=1)
-draw.line([(CX+34,mid_y),(CX+200,mid_y)],fill=(212,175,55,150),width=1)
-draw.polygon([(CX,mid_y-9),(CX+9,mid_y),(CX,mid_y+9),(CX-9,mid_y)],fill=(212,175,55,210))
-motto='NOBILITAS · AURUM · NIGRA'
-txt(CX,mid_y+32,motto,LATIN(20,'sans'),MUTED,'ma')
+# ===== 分割线（卡片与二维码之间）=====
+div_y=GRID_BOTTOM+27
+draw.line([(90,div_y),(CX-26,div_y)],fill=(212,175,55,220),width=2)
+draw.line([(CX+26,div_y),(W-90,div_y)],fill=(212,175,55,220),width=2)
+draw.polygon([(CX,div_y-9),(CX+9,div_y),(CX,div_y+9),(CX-9,div_y)],fill=(212,175,55,240))
 
 # 二维码区域：去掉黑色底框，仅保留极淡金色描边作为结构
 panel_x1,panel_x2=W//2-360,W//2+360
