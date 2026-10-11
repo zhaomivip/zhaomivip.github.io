@@ -110,6 +110,13 @@ draw.line([(CX+ew//2+14,ey_y+eh//2),(CX+ew//2+50,ey_y+eh//2)],fill=(212,175,55,2
 title='着迷黑金贵族体系'
 tf=CJK(134,'Black')
 ty=ey_y+eh+20
+# 标题金色光晕（先画模糊金色大字作为底衬）
+glow=Image.new('RGBA',(W,400),(0,0,0,0))
+gd=ImageDraw.Draw(glow)
+tw,th=tsize(title,tf)
+gd.text((CX-tw//2,200-ty),title,font=tf,fill=(212,175,55,120),anchor='la')
+glow=glow.filter(ImageFilter.GaussianBlur(22))
+canvas.alpha_composite(glow,(0,ty-200))
 gold_text(CX,ty,title,tf,'ma')
 
 sub='九阶黑金 · 逐档尊享'
@@ -122,8 +129,10 @@ ly=ty+tsize(title,tf)[1]+14+sh+18
 txt(CX,ly,lead,lf,MUTED,'ma')
 
 dy=ly+36
-draw.line([(150,dy),(W-150,dy)],fill=(212,175,55,120),width=1)
-draw.ellipse([(CX-5,dy-5),(CX+5,dy+5)],outline=(212,175,55,200),width=2)
+# 标题分隔线（两端菱形端饰）
+draw.line([(150,dy),(CX-16,dy)],fill=(212,175,55,130),width=1)
+draw.line([(CX+16,dy),(W-150,dy)],fill=(212,175,55,130),width=1)
+draw.polygon([(CX,dy-6),(CX+6,dy),(CX,dy+6),(CX-6,dy)],fill=(212,175,55,220))
 
 # ===== 九档卡片（3x3）=====
 # 每档按四大类提炼：(项数, [代表权益1, 代表权益2])
@@ -375,10 +384,15 @@ txt(tx,qr_top+qr_panel_h//2-34,'扫码查看',CJK(28,'Bold'),GOLD,'la')
 txt(tx,qr_top+qr_panel_h//2+2,'完整九阶权益',CJK(21,'Medium'),CREAM,'la')
 txt(tx,qr_top+qr_panel_h//2+34,'zhaomivip.github.io',LATIN(17,'sans'),MUTED,'la')
 
+# 整体金边（外框+内细线，双层优雅）
+PAD=42
+rrect([(PAD,PAD),(W-PAD,H-PAD)],r=18,outline=(212,175,55,170),w=2)
+rrect([(PAD+7,PAD+7),(W-PAD-7,H-PAD-7)],r=14,outline=(212,175,55,70),w=1)
+
 # 四角装饰
 def corner(cx,cy,sx,sy):
-    draw.line([(cx,cy),(cx+sx,cy)],fill=(212,175,55,200),width=2)
-    draw.line([(cx,cy),(cx,cy+sy)],fill=(212,175,55,200),width=2)
+    draw.line([(cx,cy),(cx+sx,cy)],fill=(212,175,55,220),width=2)
+    draw.line([(cx,cy),(cx,cy+sy)],fill=(212,175,55,220),width=2)
 corner(90,90,40,40); corner(W-90,90,-40,40); corner(90,H-90,40,-40); corner(W-90,H-90,-40,-40)
 
 # 暗角
