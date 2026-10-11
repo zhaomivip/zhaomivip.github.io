@@ -281,46 +281,46 @@ def glass_card(x,y,w,h,i):
         glow=glow.filter(ImageFilter.GaussianBlur(15))
         canvas.alpha_composite(glow,(x-17,y-17))
 
-    # ===== 基础层：半透明半黑色深色玻璃（冷调深灰，背景透出）=====
+    # ===== 基础层：半透明半黑色深色玻璃（冷调深灰，背景微透，整体统一）=====
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        # 深色玻璃：顶部稍亮（迎光），底部稍暗，冷调中性灰
-        a=int(82-tt*22)            # 半透明：顶部82，底部60
-        r=int(32+tt*8); g=int(33+tt*8); b=int(38+tt*8)
+        # 深色玻璃：整体统一深灰，仅极轻微顶亮底暗
+        a=int(96-tt*16)            # 半透明：顶部96，底部80
+        r=int(28+tt*6); g=int(29+tt*6); b=int(33+tt*6)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
 
-    # ===== 水晶穹顶高光（白色，模拟凸起水晶的聚光折射）=====
+    # ===== 水晶高光（极柔和灰白色，保持整体半黑色统一，仅微妙水润感）=====
     hl=Image.new('RGBA',(w,h),(0,0,0,0))
     hd=ImageDraw.Draw(hl)
-    # 穹顶主高光：顶部亮斑，向下弧形衰减（凸起立体感）
-    for yy in range(int(h*0.68)):
-        edge=yy/(h*0.68)
-        curve=1-(edge-0.26)**2*3.8
-        a=int(185*max(curve,0)*(1-edge)**0.9)
-        hd.line([(0,yy),(w,yy)],fill=(255,255,255,a))
-    # 镜面反光带（水润光滑的横向亮带）
-    for yy in range(int(h*0.18)):
-        tt=yy/(h*0.18)
-        a=int(140*(1-tt)**2.4)
-        hd.line([(w*0.08,yy+int(h*0.07)),(w*0.92,yy+int(h*0.07))],fill=(255,255,255,a))
-    # 顶部极亮棱线（水晶顶边聚光，水润感）
-    for yy in range(int(h*0.035)):
-        a=int(190*(1-yy/(h*0.035)))
-        hd.line([(w*0.14,yy),(w*0.86,yy)],fill=(255,255,255,a))
-    # 细密折射光带（水晶内部折射，白色细线）
-    for k in range(-h,w+h,3):
-        hd.line([(k,0),(k+h//3,h//3)],fill=(255,255,255,7),width=1)
+    # 穹顶主高光：极淡顶部亮斑，向下弧形衰减（微妙凸起感）
+    for yy in range(int(h*0.62)):
+        edge=yy/(h*0.62)
+        curve=1-(edge-0.24)**2*4.0
+        a=int(72*max(curve,0)*(1-edge)**1.1)
+        hd.line([(0,yy),(w,yy)],fill=(210,215,225,a))
+    # 镜面反光带（极淡横向亮带，水润光滑）
+    for yy in range(int(h*0.14)):
+        tt=yy/(h*0.14)
+        a=int(48*(1-tt)**2.6)
+        hd.line([(w*0.10,yy+int(h*0.06)),(w*0.90,yy+int(h*0.06))],fill=(215,220,230,a))
+    # 顶部棱线（极淡顶边聚光）
+    for yy in range(int(h*0.03)):
+        a=int(70*(1-yy/(h*0.03)))
+        hd.line([(w*0.16,yy),(w*0.84,yy)],fill=(220,225,235,a))
+    # 细密折射光带（极淡细线）
+    for k in range(-h,w+h,4):
+        hd.line([(k,0),(k+h//3,h//3)],fill=(210,215,225,3),width=1)
     base=Image.alpha_composite(base,hl)
 
-    # 底部微弱冷色反光（非金色，保持深色玻璃统一）
+    # 底部极微弱冷色反光
     refl=Image.new('RGBA',(w,h),(0,0,0,0))
     rd=ImageDraw.Draw(refl)
-    for yy in range(int(h*0.40)):
-        tt=yy/(h*0.40)
-        a=int(36*tt)
-        rd.line([(0,h-yy),(w,h-yy)],fill=(180,190,205,a))
+    for yy in range(int(h*0.35)):
+        tt=yy/(h*0.35)
+        a=int(22*tt)
+        rd.line([(0,h-yy),(w,h-yy)],fill=(160,170,185,a))
     base=Image.alpha_composite(base,refl)
 
     # 圆角遮罩
@@ -329,22 +329,22 @@ def glass_card(x,y,w,h,i):
     base.putalpha(mask)
     canvas.alpha_composite(base,(x,y))
 
-    # ===== 立体棱边描边（上亮下暗，白色冷调，凸起感）=====
+    # ===== 立体棱边描边（上亮下暗，极淡，凸起感）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(230-tt*130)
-        bdr.line([(0,yy),(w,yy)],fill=(235,240,250,a) if tt<0.5 else (40,42,48,a))
+        a=int(120-tt*70)
+        bdr.line([(0,yy),(w,yy)],fill=(200,208,220,a) if tt<0.5 else (35,37,42,a))
     ring=Image.new('L',(w,h),0)
     ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=3)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
 
-    # 顶部亮棱（水晶顶边高光，水润光滑）
+    # 顶部亮棱（极淡，水润光滑）
     topedge=Image.new('RGBA',(w,h),(0,0,0,0))
     te=ImageDraw.Draw(topedge)
-    te.rounded_rectangle((2,2,w-2,h-2),radius=R-1,outline=(255,255,255,185),width=2)
+    te.rounded_rectangle((2,2,w-2,h-2),radius=R-1,outline=(220,225,235,90),width=2)
     canvas.alpha_composite(topedge,(x,y))
 
     # 底部边缘微暗（凸起物底边阴影，仅边缘）
