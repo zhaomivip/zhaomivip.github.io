@@ -104,6 +104,15 @@ def txt(x,y,text,font,fill,anchor='la',shadow=False):
 
 CX=W//2
 
+# ===== 卡片几何常量（提前定义，供标题区分割线估算使用）=====
+COLS=3; ROWS=3
+MARGIN_X=60
+GAP=28
+CARD_W=(W-2*MARGIN_X-(COLS-1)*GAP)//COLS
+CARD_H=516
+GRID_H=ROWS*CARD_H+(ROWS-1)*GAP
+QR_PANEL_H=290
+
 # ===== 标题区（艺术字体 + 分布填充与卡片间空隙）=====
 ey='NOBILITAS · AURUM · NIGRA'
 ef=LATIN(30,'display'); ew,eh=tsize(ey,ef)
@@ -165,13 +174,19 @@ for ch in sub_right:
     gold_text(sx+cw//2,sub_y,ch,sf,'ma')
     sx+=cw+sub_sp
 
-# 英文副标题：手写花体英文（Great Vibes），下移+加大
+# 英文副标题：手写花体英文（Great Vibes），加大
 lead='Black Gold Nobility · Nine Tiers'
-lf=SCRIPT(58,'great')
-ly=sub_y+tsize(sub_left,sf)[1]+40
+lf=SCRIPT(72,'great')
+ly=sub_y+tsize(sub_left,sf)[1]+36
 txt(CX,ly,lead,lf,GOLD,'ma')
+lead_h=tsize(lead,lf)[1]
 
-dy=ly+30
+# 标题分隔线：下移到英文花字与卡片之间的中间位置
+# 两步估算：先用占位 dy 算出网格位置，再把分隔线放到英文与卡片的中点
+_dy_est=ly+lead_h+36
+_hb_est=_dy_est+16
+_grid_top_est=_hb_est+((H-QR_PANEL_H-30-_hb_est)-GRID_H)//2
+dy=(ly+lead_h//2+_grid_top_est)//2
 # 标题分隔线（两端菱形端饰）
 draw.line([(150,dy),(CX-16,dy)],fill=(212,175,55,130),width=1)
 draw.line([(CX+16,dy),(W-150,dy)],fill=(212,175,55,130),width=1)
@@ -229,14 +244,7 @@ TIERS=[
 ]
 
 # 卡片几何（卡片网格在标题与二维码之间垂直居中，二维码贴近卡片下方）
-COLS=3; ROWS=3
-MARGIN_X=60
-GAP=28
-CARD_W=(W-2*MARGIN_X-(COLS-1)*GAP)//COLS
-CARD_H=516
-GRID_H=ROWS*CARD_H+(ROWS-1)*GAP
 HEADER_BOTTOM=dy+16
-QR_PANEL_H=290
 # 先用底部估算位计算网格居中，再把二维码上移贴近卡片
 _QR_EST=H-QR_PANEL_H-30
 GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2
@@ -266,37 +274,37 @@ def glass_card(x,y,w,h,i):
         gd.rounded_rectangle((9,9,w+21,h+21),radius=R+6,outline=(212,175,55,glow_alpha),width=5)
         glow=glow.filter(ImageFilter.GaussianBlur(13))
         canvas.alpha_composite(glow,(x-15,y-15))
-    # 基础层：极高通透深色渐变（半透明玻璃，背景花纹可透出）
+    # 基础层：极通透半黑玻璃（几乎无黑色，背景花纹清晰透出）
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(78-tt*18)            # 大幅降低不透明度，透出背景
-        r=int(26+tt*22); g=int(18+tt*16); b=int(9+tt*14)
+        a=int(34-tt*14)            # 极通透，半黑玻璃
+        r=int(40+tt*16); g=int(34+tt*13); b=int(28+tt*10)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
-    # 水面弧形高光（宽域穹顶反光，水润感）
+    # 水面弧形高光（宽域穹顶反光，水晶感）
     hl=Image.new('RGBA',(w,h),(0,0,0,0))
     hd=ImageDraw.Draw(hl)
-    for yy in range(int(h*0.55)):
-        edge=yy/(h*0.55)
-        curve=1-(edge-0.45)**2*2.6
-        a=int(90*max(curve,0)*(1-edge)**1.1)
-        hd.line([(0,yy),(w,yy)],fill=(255,250,225,a))
-    # 镜面高光带（水面反光的亮带，水润关键）
-    for yy in range(int(h*0.12)):
-        tt=yy/(h*0.12)
-        a=int(55*(1-tt)**2)
-        hd.line([(w*0.15,yy+int(h*0.06)),(w*0.85,yy+int(h*0.06))],fill=(255,255,240,a))
-    # 水润斜射光带（细密折射）
+    for yy in range(int(h*0.6)):
+        edge=yy/(h*0.6)
+        curve=1-(edge-0.4)**2*2.8
+        a=int(120*max(curve,0)*(1-edge)**1.0)
+        hd.line([(0,yy),(w,yy)],fill=(255,252,235,a))
+    # 镜面高光带（水晶反光亮带）
+    for yy in range(int(h*0.14)):
+        tt=yy/(h*0.14)
+        a=int(80*(1-tt)**2)
+        hd.line([(w*0.12,yy+int(h*0.07)),(w*0.88,yy+int(h*0.07))],fill=(255,255,245,a))
+    # 水晶斜射折射光带（细密亮线）
     for k in range(-h,w+h,3):
-        hd.line([(k,0),(k+h//3,h//3)],fill=(255,252,225,5),width=1)
+        hd.line([(k,0),(k+h//3,h//3)],fill=(255,253,230,7),width=1)
     base=Image.alpha_composite(base,hl)
     # 底部金色水面反光
     refl=Image.new('RGBA',(w,h),(0,0,0,0))
     rd=ImageDraw.Draw(refl)
-    for yy in range(int(h*0.38)):
-        tt=yy/(h*0.38)
-        a=int(46*tt)
+    for yy in range(int(h*0.42)):
+        tt=yy/(h*0.42)
+        a=int(58*tt)
         rd.line([(0,h-yy),(w,h-yy)],fill=(212,175,55,a))
     base=Image.alpha_composite(base,refl)
     # 圆角遮罩
@@ -355,29 +363,29 @@ for i,t in enumerate(TIERS):
     draw.line([(x+28,divy),(x+CARD_W-28,divy)],fill=(212,175,55,140),width=1)
     draw.ellipse([(cx-4,divy-4),(cx+4,divy+4)],fill=(212,175,55,220))
 
-    # 四大类权益（均匀分布、统一圆润字体、饱满）
+    # 四大类权益（均匀分布、统一圆润字体、加大饱满）
     cat_count=len(t['cats'])
     avail_h=y+CARD_H-divy-16
     per_h=avail_h//cat_count
-    cat_font=CJK(19,'Bold')      # 大类名统一圆润字体
-    cnt_font=CJK(13,'Bold')      # 项数
-    rep_font=CJK(14,'Medium')    # 代表权益
-    chk_font=CJK(19,'Bold')      # 对勾
+    cat_font=CJK(23,'Bold')      # 大类名加大
+    cnt_font=CJK(15,'Bold')      # 项数
+    rep_font=CJK(17,'Medium')    # 代表权益加大
+    chk_font=CJK(22,'Bold')      # 对勾
     for ci,(cat_name,count,reps) in enumerate(t['cats']):
-        cy=divy+12+ci*per_h
+        cy=divy+14+ci*per_h
         # 大类行
         if count>0:
             txt(x+20,cy,'✓',chk_font,GOLD_HI,'la')
-            txt(x+46,cy,cat_name,cat_font,GOLD,'la')
+            txt(x+48,cy,cat_name,cat_font,GOLD,'la')
             txt(x+CARD_W-20,cy,f'{count}项',cnt_font,GOLD_HI,'ra')
         else:
             txt(x+20,cy,'—',chk_font,DIM,'la')
-            txt(x+46,cy,cat_name,cat_font,DIM,'la')
+            txt(x+48,cy,cat_name,cat_font,DIM,'la')
             txt(x+CARD_W-20,cy,'—',cnt_font,DIM,'ra')
         _,bh1=tsize(cat_name,cat_font)
-        # 代表权益（两行，饱满分布）
+        # 代表权益（饱满分布）
         rep='  ·  '.join(reps)
-        txt(x+46,cy+bh1+7,rep,rep_font,CREAM,'la',shadow=True)
+        txt(x+48,cy+bh1+8,rep,rep_font,CREAM,'la',shadow=True)
 
 # ===== 底部二维码区域 =====
 qr_panel_h=QR_PANEL_H
