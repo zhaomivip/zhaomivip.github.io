@@ -40,13 +40,16 @@ header h1{
   -webkit-background-clip:text;background-clip:text;color:transparent;
   text-shadow:0 0 12px rgba(212,175,55,.3);
 }
-header .sub{font-family:var(--latin);letter-spacing:.32em;color:var(--gold);font-size:clamp(8px,1.2vw,10px);margin-top:2px;opacity:.85}
+header .sub{font-family:"Cormorant Garamond",var(--latin);font-style:italic;font-weight:600;letter-spacing:.36em;font-size:clamp(10px,1.6vw,14px);margin-top:4px;
+  background:linear-gradient(180deg,#fff7d6,var(--gold-bright) 55%,var(--gold) 80%,var(--gold-deep));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 10px rgba(212,175,55,.25);opacity:.95}
 
 /* ===== 横向对照核心 ===== */
 .cmp-wrap{
   flex:1 1 auto; min-height:0;
   overflow-x:auto; overflow-y:auto;
-  margin:0;padding:0 6px;
+  margin:0;padding:0 10px 0 16px;
   -webkit-overflow-scrolling:touch;
 }
 .cmp-wrap::-webkit-scrollbar{height:8px;width:8px}
@@ -71,15 +74,16 @@ thead th.tier.lv-9 .rom{position:relative}
 thead th.tier.lv-9 .rom::after{content:"至尊";position:absolute;top:-7px;right:-4px;font-family:var(--serif);font-size:8px;letter-spacing:.1em;color:#1a130a;background:linear-gradient(180deg,var(--gold-bright),var(--gold));padding:1px 5px;border-radius:8px;font-weight:700}
 
 /* 左侧固定列 */
-th.label,td.label{position:sticky;left:0;z-index:4;background:#100b06;padding:3px 8px;text-align:left;border-right:1px solid var(--gold-line-strong);white-space:nowrap;width:118px;min-width:118px;max-width:118px}
+th.label,td.label{position:sticky;left:16px;z-index:4;background:#100b06;padding:3px 8px;text-align:left;border-right:1px solid var(--gold-line-strong);white-space:nowrap;width:118px;min-width:118px;max-width:118px;box-shadow:4px 0 10px -4px rgba(0,0,0,.6)}
 thead th.label{z-index:7;background:linear-gradient(180deg,#1c1409,#0e0a06);font-size:10.5px;color:var(--gold);letter-spacing:.1em}
 
 /* 类别行 */
 tbody tr.cat td.cat-label{
-  position:sticky;left:0;z-index:3;
+  position:sticky;left:16px;z-index:3;
   background:linear-gradient(90deg,rgba(40,28,10,.98),rgba(30,21,8,.96));
   padding:3px 10px;font-family:var(--serif);font-weight:700;color:var(--gold-bright);font-size:11px;letter-spacing:.1em;line-height:1.2;
   border-top:1px solid var(--gold-line-strong);border-bottom:1px solid var(--gold-line-strong);
+  box-shadow:4px 0 10px -4px rgba(0,0,0,.6)
 }
 tbody tr.cat td.cat-empty{
   background:linear-gradient(90deg,rgba(30,21,8,.85),rgba(18,12,6,.85));
@@ -130,7 +134,7 @@ main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
 <body>
 <header>
   <h1>着迷黑金贵族体系</h1>
-  <div class="sub">NINE TIERS · 横向权益对照</div>
+  <div class="sub">NOBILITAS · AURUM · NIGRA</div>
 </header>
 
 <main>
