@@ -258,109 +258,61 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """半透明半黑色玻璃水晶卡片：深色玻璃底 + 白色水晶高光 + 水润光滑边缘 + 立体凸起"""
-    R=34  # 大圆角，水滴圆润光滑
+    """简洁卡片：半透明背景 + 渐变金边 + 凸起光影（投影 + 顶部高光）"""
+    R=34  # 圆角
 
-    # ===== 悬浮投影：完全在卡片下方外侧，模糊后切掉卡片区域内投影 =====
-    sh=100
-    shadow=Image.new('RGBA',(w+80,h+160),(0,0,0,0))
+    # ===== 1. 凸起光影 - 外层柔和投影（卡片下方，模糊）=====
+    sh=70
+    shadow=Image.new('RGBA',(w+60,h+140),(0,0,0,0))
     sd=ImageDraw.Draw(shadow)
-    sd.rounded_rectangle((40,h,w+40,h+sh),radius=R,fill=(0,0,0,90))
-    shadow=shadow.filter(ImageFilter.GaussianBlur(22))
+    sd.rounded_rectangle((30,h,w+30,h+sh),radius=R,fill=(0,0,0,110))
+    shadow=shadow.filter(ImageFilter.GaussianBlur(18))
     smask=shadow.getchannel('A').copy()
-    ImageDraw.Draw(smask).rectangle((0,0,w+80,h),fill=0)
+    ImageDraw.Draw(smask).rectangle((0,0,w+60,h),fill=0)  # 切掉卡片区域内投影
     shadow.putalpha(smask)
-    canvas.alpha_composite(shadow,(x-40,y))
+    canvas.alpha_composite(shadow,(x-30,y))
 
-    # 外层柔和白色光晕（高等级稍强，非金色，保持统一）
-    glow_alpha=int(22+i*8)
-    if glow_alpha>0:
-        glow=Image.new('RGBA',(w+34,h+34),(0,0,0,0))
-        gd=ImageDraw.Draw(glow)
-        gd.rounded_rectangle((10,10,w+24,h+24),radius=R+7,outline=(220,225,235,glow_alpha),width=4)
-        glow=glow.filter(ImageFilter.GaussianBlur(15))
-        canvas.alpha_composite(glow,(x-17,y-17))
-
-    # ===== 基础层：半透明半黑色深色玻璃（冷调深灰，背景微透，整体统一）=====
+    # ===== 2. 半透明背景（深色玻璃，背景微透，整体统一）=====
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        # 深色玻璃：整体统一深灰，仅极轻微顶亮底暗
-        a=int(96-tt*16)            # 半透明：顶部96，底部80
-        r=int(28+tt*6); g=int(29+tt*6); b=int(33+tt*6)
+        a=int(120-tt*30)            # 半透明：顶部120，底部90
+        r=int(22+tt*8); g=int(20+tt*8); b=int(26+tt*8)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
-
-    # ===== 水晶高光（极柔和灰白色，保持整体半黑色统一，仅微妙水润感）=====
-    hl=Image.new('RGBA',(w,h),(0,0,0,0))
-    hd=ImageDraw.Draw(hl)
-    # 穹顶主高光：极淡顶部亮斑，向下弧形衰减（微妙凸起感）
-    for yy in range(int(h*0.62)):
-        edge=yy/(h*0.62)
-        curve=1-(edge-0.24)**2*4.0
-        a=int(72*max(curve,0)*(1-edge)**1.1)
-        hd.line([(0,yy),(w,yy)],fill=(210,215,225,a))
-    # 镜面反光带（极淡横向亮带，水润光滑）
-    for yy in range(int(h*0.14)):
-        tt=yy/(h*0.14)
-        a=int(48*(1-tt)**2.6)
-        hd.line([(w*0.10,yy+int(h*0.06)),(w*0.90,yy+int(h*0.06))],fill=(215,220,230,a))
-    # 顶部棱线（极淡顶边聚光）
-    for yy in range(int(h*0.03)):
-        a=int(70*(1-yy/(h*0.03)))
-        hd.line([(w*0.16,yy),(w*0.84,yy)],fill=(220,225,235,a))
-    # 细密折射光带（极淡细线）
-    for k in range(-h,w+h,4):
-        hd.line([(k,0),(k+h//3,h//3)],fill=(210,215,225,3),width=1)
-    base=Image.alpha_composite(base,hl)
-
-    # 底部极微弱冷色反光
-    refl=Image.new('RGBA',(w,h),(0,0,0,0))
-    rd=ImageDraw.Draw(refl)
-    for yy in range(int(h*0.35)):
-        tt=yy/(h*0.35)
-        a=int(22*tt)
-        rd.line([(0,h-yy),(w,h-yy)],fill=(160,170,185,a))
-    base=Image.alpha_composite(base,refl)
-
     # 圆角遮罩
     mask=Image.new('L',(w,h),0)
     ImageDraw.Draw(mask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
     base.putalpha(mask)
     canvas.alpha_composite(base,(x,y))
 
-    # ===== 立体棱边描边（上亮下暗，极淡，凸起感）=====
+    # ===== 3. 凸起光影 - 顶部内高光（凸起感，仅顶部一条亮带）=====
+    top_hl=Image.new('RGBA',(w,h),(0,0,0,0))
+    thd=ImageDraw.Draw(top_hl)
+    for yy in range(int(h*0.12)):
+        tt=yy/(h*0.12)
+        a=int(90*(1-tt)**2)         # 顶部最亮，向下快速衰减
+        thd.line([(0,yy),(w,yy)],fill=(255,247,214,a))
+    topmask=Image.new('L',(w,h),0)
+    ImageDraw.Draw(topmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
+    top_hl.putalpha(topmask)
+    canvas.alpha_composite(top_hl,(x,y))
+
+    # ===== 4. 渐变边框（金色，上亮下暗，凸起感）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(120-tt*70)
-        bdr.line([(0,yy),(w,yy)],fill=(200,208,220,a) if tt<0.5 else (35,37,42,a))
+        # 金色渐变：顶部亮金 → 底部深金
+        cr=int(GOLD_HI[0]+(GOLD_DK[0]-GOLD_HI[0])*tt)
+        cg=int(GOLD_HI[1]+(GOLD_DK[1]-GOLD_HI[1])*tt)
+        cb=int(GOLD_HI[2]+(GOLD_DK[2]-GOLD_HI[2])*tt)
+        ca=int(235-tt*60)           # 顶部不透明，底部稍透
+        bdr.line([(0,yy),(w,yy)],fill=(cr,cg,cb,ca))
     ring=Image.new('L',(w,h),0)
     ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=3)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
-
-    # 顶部亮棱（极淡，水润光滑）
-    topedge=Image.new('RGBA',(w,h),(0,0,0,0))
-    te=ImageDraw.Draw(topedge)
-    te.rounded_rectangle((2,2,w-2,h-2),radius=R-1,outline=(220,225,235,90),width=2)
-    canvas.alpha_composite(topedge,(x,y))
-
-    # 底部边缘微暗（凸起物底边阴影，仅边缘）
-    botedge=Image.new('RGBA',(w,h),(0,0,0,0))
-    be=ImageDraw.Draw(botedge)
-    be.rounded_rectangle((2,2,w-2,h-2),radius=R-1,outline=(0,0,0,100),width=2)
-    botmask=Image.new('L',(w,h),0)
-    ImageDraw.Draw(botmask).rectangle((0,h//2,w,h),fill=255)
-    botedge.putalpha(Image.composite(botedge.getchannel('A'),Image.new('L',(w,h),0),botmask))
-    canvas.alpha_composite(botedge,(x,y))
-
-    # 内圈细白边（玻璃内轮廓）
-    inner=Image.new('RGBA',(w,h),(0,0,0,0))
-    idr=ImageDraw.Draw(inner)
-    idr.rounded_rectangle((5,5,w-5,h-5),radius=R-3,outline=(220,225,235,30),width=1)
-    canvas.alpha_composite(inner,(x,y))
 
 for i,t in enumerate(TIERS):
     x,y=card_pos(i)
