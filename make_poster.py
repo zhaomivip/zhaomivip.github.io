@@ -390,40 +390,40 @@ for i,t in enumerate(TIERS):
 
     # 头部：黑金 Ⅰ（大字体饱满 + 金色描边）
     tier_title=f'黑金 {t["id"]}'
-    ttf=CJK(56,'Black')
-    draw.text((cx,y+30),tier_title,font=ttf,fill=(0,0,0,0),anchor='ma',stroke_width=2,stroke_fill=(110,82,18,220))
-    gold_text(cx,y+28,tier_title,ttf,'ma')
+    ttf=CJK(62,'Black')
+    draw.text((cx,y+32),tier_title,font=ttf,fill=(0,0,0,0),anchor='ma',stroke_width=2,stroke_fill=(110,82,18,220))
+    gold_text(cx,y+30,tier_title,ttf,'ma')
     _,gnh=tsize(tier_title,ttf)
     # 身价值（金色大字）
-    txt(cx,y+28+gnh+8,f'身价值 {t["wealth"]:,}',CJK(23,'Bold'),GOLD_HI,'ma',shadow=True)
+    txt(cx,y+30+gnh+10,f'身价值 {t["wealth"]:,}',CJK(26,'Bold'),GOLD_HI,'ma',shadow=True)
     # 分隔线
-    divy=y+28+gnh+8+32
-    draw.line([(x+28,divy),(x+CARD_W-28,divy)],fill=(212,175,55,140),width=1)
+    divy=y+30+gnh+10+34
+    draw.line([(x+30,divy),(x+CARD_W-30,divy)],fill=(212,175,55,140),width=1)
     draw.ellipse([(cx-4,divy-4),(cx+4,divy+4)],fill=(212,175,55,220))
 
     # 四大类权益（均匀分布、统一圆润字体、加大饱满）
     cat_count=len(t['cats'])
-    avail_h=y+CARD_H-divy-16
+    avail_h=y+CARD_H-divy-14
     per_h=avail_h//cat_count
-    cat_font=CJK(23,'Bold')      # 大类名加大
-    cnt_font=CJK(15,'Bold')      # 项数
-    rep_font=CJK(17,'Medium')    # 代表权益加大
-    chk_font=CJK(22,'Bold')      # 对勾
+    cat_font=CJK(27,'Bold')      # 大类名加大
+    cnt_font=CJK(18,'Bold')      # 项数加大
+    rep_font=CJK(20,'Medium')    # 代表权益加大
+    chk_font=CJK(26,'Bold')      # 对勾加大
     for ci,(cat_name,count,reps) in enumerate(t['cats']):
-        cy=divy+14+ci*per_h
+        cy=divy+16+ci*per_h
         # 大类行
         if count>0:
-            txt(x+20,cy,'✓',chk_font,GOLD_HI,'la')
-            txt(x+48,cy,cat_name,cat_font,GOLD,'la')
-            txt(x+CARD_W-20,cy,f'{count}项',cnt_font,GOLD_HI,'ra')
+            txt(x+22,cy,'✓',chk_font,GOLD_HI,'la')
+            txt(x+54,cy,cat_name,cat_font,GOLD,'la')
+            txt(x+CARD_W-22,cy,f'{count}项',cnt_font,GOLD_HI,'ra')
         else:
-            txt(x+20,cy,'—',chk_font,DIM,'la')
-            txt(x+48,cy,cat_name,cat_font,DIM,'la')
-            txt(x+CARD_W-20,cy,'—',cnt_font,DIM,'ra')
+            txt(x+22,cy,'—',chk_font,DIM,'la')
+            txt(x+54,cy,cat_name,cat_font,DIM,'la')
+            txt(x+CARD_W-22,cy,'—',cnt_font,DIM,'ra')
         _,bh1=tsize(cat_name,cat_font)
-        # 代表权益（饱满分布）
+        # 代表权益（饱满分布，加大间距）
         rep='  ·  '.join(reps)
-        txt(x+48,cy+bh1+8,rep,rep_font,CREAM,'la',shadow=True)
+        txt(x+54,cy+bh1+10,rep,rep_font,CREAM,'la',shadow=True)
 
 # ===== 底部二维码区域 =====
 qr_panel_h=QR_PANEL_H
