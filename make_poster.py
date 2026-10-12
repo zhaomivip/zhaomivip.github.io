@@ -448,7 +448,7 @@ canvas.alpha_composite(pbdr,(panel_x1,qr_top))
 
 # 美化二维码：白色圆角底 + 金色渐变描边 + 外发光（放大）
 qr_size=250
-qr_img=Image.open(QR).convert('RGBA').resize((qr_size,qr_size),Image.LANCZOS)
+qr_img=Image.open(QR).convert('RGBA')  # 已是 250px，不再缩放
 pad=18
 qb_w=qr_size+2*pad
 qcx=W//2-120; qcy=qr_top+(qr_panel_h-qb_w)//2
