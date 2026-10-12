@@ -258,10 +258,10 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """水晶玻璃卡片：半透明半黑底 + 左上扫光 + 1px 极简金边 + 柔和投影"""
+    """高级感纯色玻璃卡片：毛玻璃底（背景模糊）+ 纯色遮罩 + 左上扫光 + 极简金边"""
     R=34  # 圆角
 
-    # ===== 1. 柔和下投影（悬浮感，极淡）=====
+    # ===== 1. 柔和下投影（悬浮感）=====
     sh=60
     shadow=Image.new('RGBA',(w+60,h+120),(0,0,0,0))
     sd=ImageDraw.Draw(shadow)
@@ -272,19 +272,32 @@ def glass_card(x,y,w,h,i):
     shadow.putalpha(smask)
     canvas.alpha_composite(shadow,(x-30,y))
 
-    # ===== 2. 半透明半黑底（半透：背景可透出，内容清晰可读）=====
-    base=Image.new('RGBA',(w,h),(0,0,0,0))
-    bd=ImageDraw.Draw(base)
-    for yy in range(h):
-        tt=yy/max(h-1,1)
-        a=int(68+14*(0.5-tt))   # alpha 61~75（半透：背景隐约可见，内容清晰）
-        bd.line([(0,yy),(w,yy)],fill=(0,0,0,a))
+    # ===== 2. 毛玻璃底：裁剪背景 → 高斯模糊 → 圆角遮罩 =====
+    # 先把 canvas 转 RGB 裁剪（避免 alpha 通道问题），再转回来
+    pad=8  # 扩展裁剪区域，避免模糊边缘伪影
+    bx0=max(0,x-pad); by0=max(0,y-pad)
+    bx1=min(canvas.width,x+w+pad); by1=min(canvas.height,y+h+pad)
+    # 裁剪 canvas 已有内容（此时背景图已画好）
+    canvas_rgb=canvas.convert('RGB')
+    bg_crop=canvas_rgb.crop((bx0,by0,bx1,by1))
+    # 高斯模糊 → 磨砂玻璃效果
+    blur=bg_crop.filter(ImageFilter.GaussianBlur(12))
+    # 转回 RGBA 并裁剪到精确卡片区域
+    blur_rgba=blur.convert('RGBA')
+    inner=blur_rgba.crop((x-bx0,y-by0,x-bx0+w,y-by0+h))
+    # 圆角遮罩
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
-    base.putalpha(rmask)
-    canvas.alpha_composite(base,(x,y))
+    inner.putalpha(rmask)
+    canvas.alpha_composite(inner,(x,y))
 
-    # ===== 3. 左上扫光（暖白色对角扫过）=====
+    # ===== 3. 纯色遮罩（统一纯色，高级感，让文字可读）=====
+    tint=Image.new('RGBA',(w,h),(0,0,0,0))
+    td=ImageDraw.Draw(tint)
+    td.rounded_rectangle((0,0,w,h),radius=R,fill=(12,10,16,70))  # 深紫黑，统一纯色，半透让毛玻璃透出
+    canvas.alpha_composite(tint,(x,y))
+
+    # ===== 4. 左上扫光（暖白色对角扫过，细腻水晶反光）=====
     sweep=Image.new('RGBA',(w,h),(0,0,0,0))
     swd=ImageDraw.Draw(sweep)
     for yy in range(h):
@@ -295,12 +308,12 @@ def glass_card(x,y,w,h,i):
             prog=(xx+yy)/(w+h)
             if prog<0.70 and d_norm<1.0:
                 intensity=(1-prog/0.70)*(1-d_norm)**1.0
-                a=int(150*intensity)
+                a=int(140*intensity)
                 swd.point((xx,yy),fill=(255,248,220,a))
     sweep.putalpha(rmask)
     canvas.alpha_composite(sweep,(x,y))
 
-    # ===== 4. 2px 极简金边（统一纯色，无渐变，高级简约）=====
+    # ===== 5. 极简金边（2px 统一纯色，无渐变）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     bdr.rounded_rectangle((0,0,w,h),radius=R,outline=(230,200,110,220),width=2)
