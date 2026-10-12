@@ -243,34 +243,34 @@ TIERS=[
            ('拍卖特权',5,['保密出价','拍卖 5折'])]},
 ]
 
-# 卡片几何（卡片网格整体上移）
+# 卡片几何（卡片网格大幅上移）
 HEADER_BOTTOM=dy+16
 _QR_EST=H-QR_PANEL_H-30
-GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-80  # 上移 80px（更明显）
+GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-600  # 上移 600px
 GRID_BOTTOM=GRID_TOP+GRID_H
 QR_TOP=GRID_BOTTOM+55
 
-# ===== 卡片区域暗纹背景（明显可见的暗金色网格 + 对角暗纹 + 聚焦底色）=====
+# ===== 卡片区域暗纹背景（明显的暗金色网格 + 对角暗纹 + 聚焦底色）=====
 card_bg=Image.new('RGBA',(W,H),(0,0,0,0))
 cbd=ImageDraw.Draw(card_bg)
-# 卡片区域整体暗底色（让卡片与背景分层，聚焦感）
-cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(6,3,2,70))
-# 暗金色网格线（加强：alpha 50~60，让你一眼能看见）
+# 卡片区域整体暗底色
+cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(5,2,1,85))
+# 暗金色网格线（加强）
 grid_step=36
 for gy in range(GRID_TOP-40,GRID_BOTTOM+40,grid_step):
-    cbd.line([(0,gy),(W,gy)],fill=(212,175,55,50),width=1)
+    cbd.line([(0,gy),(W,gy)],fill=(212,175,55,75),width=1)
 for gx in range(0,W,grid_step):
-    cbd.line([(gx,GRID_TOP-40),(gx,GRID_BOTTOM+40)],fill=(212,175,55,40),width=1)
-# 对角暗纹（加强：alpha 20）
+    cbd.line([(gx,GRID_TOP-40),(gx,GRID_BOTTOM+40)],fill=(212,175,55,60),width=1)
+# 对角暗纹（加强）
 for k in range(-GRID_BOTTOM-200,W+GRID_BOTTOM+200,8):
-    cbd.line([(k,GRID_TOP-60),(k+GRID_H//2,GRID_BOTTOM+60)],fill=(212,175,55,20),width=1)
+    cbd.line([(k,GRID_TOP-60),(k+GRID_H//2,GRID_BOTTOM+60)],fill=(212,175,55,35),width=1)
 # 卡片区域顶部渐隐
 for yy in range(50):
-    a=int(70*(1-yy/50))
+    a=int(85*(1-yy/50))
     cbd.rectangle([(0,GRID_TOP-50+yy),(W,GRID_TOP-50+yy)],fill=(0,0,0,a))
 # 卡片区域底部渐隐
 for yy in range(30):
-    a=int(50*(yy/30))
+    a=int(60*(yy/30))
     cbd.rectangle([(0,GRID_BOTTOM+yy),(W,GRID_BOTTOM+yy)],fill=(0,0,0,a))
 canvas.alpha_composite(card_bg,(0,0))
 
@@ -281,7 +281,7 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """透明玻璃卡片：纯色底 + 金边 + 顶部内缘高光"""
+    """透明玻璃卡片：无底色 + 细描高级边框 + 顶部内缘高光"""
     R=34  # 圆角
 
     # ===== 1. 底投影（干净，卡片正下方）=====
@@ -292,20 +292,16 @@ def glass_card(x,y,w,h,i):
     shadow=shadow.filter(ImageFilter.GaussianBlur(14))
     canvas.alpha_composite(shadow,(x-10,y))
 
-    # ===== 2. 纯色底（半透深炭灰，背景图案清晰透出）=====
-    base=Image.new('RGBA',(w,h),(0,0,0,0))
-    bd=ImageDraw.Draw(base)
-    for yy in range(h):
-        tt=yy/max(h-1,1)
-        a=int(85-12*tt)
-        r=int(20+10*tt); g=int(16+8*tt); b=int(24+12*tt)
-        bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
+    # ===== 2. 无边框纯玻璃底（背景直接透出，仅加极淡色调让文字可读）=====
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
-    base.putalpha(rmask)
-    canvas.alpha_composite(base,(x,y))
+    # 极淡的深色调（alpha 28，几乎全透，让 Baroque 花纹直接透过）
+    tint=Image.new('RGBA',(w,h),(18,14,22,28))
+    tint.putalpha(rmask)
+    canvas.alpha_composite(tint,(x,y))
 
-    # ===== 3. 金边（2px，顶部微亮、底部微暗，自然立体感）=====
+    # ===== 3. 高级细描金边（双层：外 2px 主金 + 内 1px 亮金细描，精致高级）=====
+    # 外层主金边 2px（上亮下暗渐变）
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
@@ -316,6 +312,13 @@ def glass_card(x,y,w,h,i):
     ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=2)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
+    # 内层细描边 1px（纯亮金色，贴主金边内侧，精致感）
+    inner_ring=Image.new('L',(w,h),0)
+    ImageDraw.Draw(inner_ring).rounded_rectangle((3,3,w-3,h-3),radius=R-2,fill=0,outline=255,width=1)
+    inner_border=Image.new('RGBA',(w,h),(0,0,0,0))
+    ibd=ImageDraw.Draw(inner_border)
+    ibd.paste((255,240,180,180),(0,0),inner_ring)
+    canvas.alpha_composite(inner_border,(x,y))
 
     # ===== 4. 顶部内缘高光（水晶棱边反光）=====
     top_hl=Image.new('RGBA',(w,h),(0,0,0,0))
