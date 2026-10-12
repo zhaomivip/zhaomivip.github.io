@@ -243,13 +243,36 @@ TIERS=[
            ('拍卖特权',5,['保密出价','拍卖 5折'])]},
 ]
 
-# 卡片几何（卡片网格在标题与二维码之间垂直居中，二维码贴近卡片下方）
+# 卡片几何（卡片网格整体上移）
 HEADER_BOTTOM=dy+16
-# 先用底部估算位计算网格居中，再把二维码上移贴近卡片
 _QR_EST=H-QR_PANEL_H-30
-GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2
+GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-50  # 整体上移 50px
 GRID_BOTTOM=GRID_TOP+GRID_H
-QR_TOP=GRID_BOTTOM+55          # 二维码上移，紧贴卡片下方
+QR_TOP=GRID_BOTTOM+55
+
+# ===== 卡片区域暗纹背景（暗金色细微网格 + 对角暗纹，高级感）=====
+card_bg=Image.new('RGBA',(W,H),(0,0,0,0))
+cbd=ImageDraw.Draw(card_bg)
+# 暗金色网格线（极淡）
+grid_step=28
+for gy in range(GRID_TOP-40,GRID_BOTTOM+40,grid_step):
+    cbd.line([(0,gy),(W,gy)],fill=(212,175,55,18),width=1)
+for gx in range(0,W,grid_step):
+    cbd.line([(gx,GRID_TOP-40),(gx,GRID_BOTTOM+40)],fill=(212,175,55,14),width=1)
+# 对角细暗纹（增加层次）
+for k in range(-GRID_BOTTOM-200,W+GRID_BOTTOM+200,6):
+    cbd.line([(k,GRID_TOP-60),(k+GRID_H//2,GRID_BOTTOM+60)],fill=(212,175,55,6),width=1)
+# 卡片区域整体极暗底色（让卡片区域更聚焦）
+cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(8,5,3,40))
+# 卡片区域顶部渐隐
+for yy in range(50):
+    a=int(40*(1-yy/50))
+    cbd.rectangle([(0,GRID_TOP-50+yy),(W,GRID_TOP-50+yy)],fill=(0,0,0,a))
+# 卡片区域底部渐隐
+for yy in range(30):
+    a=int(30*(yy/30))
+    cbd.rectangle([(0,GRID_BOTTOM+yy),(W,GRID_BOTTOM+yy)],fill=(0,0,0,a))
+canvas.alpha_composite(card_bg,(0,0))
 
 def card_pos(i):
     r,c=divmod(i,COLS)
