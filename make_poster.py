@@ -243,10 +243,10 @@ TIERS=[
            ('拍卖特权',5,['保密出价','拍卖 5折'])]},
 ]
 
-# 卡片几何（卡片网格大幅上移）
+# 卡片几何（卡片网格下移 300px，从居中位置）
 HEADER_BOTTOM=dy+16
 _QR_EST=H-QR_PANEL_H-30
-GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-600  # 上移 600px
+GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-300  # 下移 300px（原-600→-300）
 GRID_BOTTOM=GRID_TOP+GRID_H
 QR_TOP=GRID_BOTTOM+55
 
@@ -274,6 +274,60 @@ for yy in range(30):
     cbd.rectangle([(0,GRID_BOTTOM+yy),(W,GRID_BOTTOM+yy)],fill=(0,0,0,a))
 canvas.alpha_composite(card_bg,(0,0))
 
+# ===== 卡片区域中间装饰花纹（填补背景空白，Baroque 风格暗金花纹）=====
+mid_deco=Image.new('RGBA',(W,H),(0,0,0,0))
+mdd=ImageDraw.Draw(mid_deco)
+# 卡片之间的间隙装饰：菱形 + 十字暗金花纹
+for i,t in enumerate(TIERS):
+    r,c=divmod(i,COLS)
+    cx=MARGIN_X+c*(CARD_W+GAP)+CARD_W//2
+    cy=GRID_TOP+r*(CARD_H+GAP)+CARD_H+GAP//2
+    # 每列最后一张卡片下方不画（底部有 QR）
+    if r==ROWS-1: continue
+    # 小菱形 + 细十字
+    mdd.polygon([(cx,cy-6),(cx+6,cy),(cx,cy+6),(cx-6,cy)],fill=(212,175,55,90))
+    mdd.line([(cx-10,cy),(cx-7,cy)],fill=(212,175,55,50),width=1)
+    mdd.line([(cx+7,cy),(cx+10,cy)],fill=(212,175,55,50),width=1)
+    mdd.line([(cx,cy-10),(cx,cy-7)],fill=(212,175,55,50),width=1)
+    mdd.line([(cx,cy+7),(cx,cy+10)],fill=(212,175,55,50),width=1)
+
+# 卡片区域左右两侧装饰（竖排暗金花纹）
+side_deco=Image.new('RGBA',(W,H),(0,0,0,0))
+sdd=ImageDraw.Draw(side_deco)
+for yy in range(GRID_TOP+30,GRID_BOTTOM-30,80):
+    # 左侧：3 个小点 + 细横线
+    sdd.line([(15,yy),(40,yy)],fill=(212,175,55,35),width=1)
+    sdd.ellipse((42,yy-3),(48,yy+3),fill=(212,175,55,80))
+    sdd.line([(50,yy),(75,yy)],fill=(212,175,55,35),width=1)
+    # 右侧：对称
+    sdd.line([(W-75,yy),(W-50,yy)],fill=(212,175,55,35),width=1)
+    sdd.ellipse((W-48,yy-3),(W-42,yy+3),fill=(212,175,55,80))
+    sdd.line([(W-40,yy),(W-15,yy)],fill=(212,175,55,35),width=1)
+
+# 顶部标题区与卡片之间的衔接花纹
+link_deco=Image.new('RGBA',(W,H),(0,0,0,0))
+ldd=ImageDraw.Draw(link_deco)
+link_y=dy+8  # 标题分隔线稍下方
+# 左半装饰线 + 菱形
+ldd.line([(100,link_y),(CX-30,link_y)],fill=(212,175,55,70),width=1)
+ldd.polygon([(CX-30,link_y-5),(CX-25,link_y),(CX-30,link_y+5),(CX-35,link_y)],fill=(212,175,55,110))
+# 右半装饰线 + 菱形
+ldd.line([(CX+30,link_y),(W-100,link_y)],fill=(212,175,55,70),width=1)
+ldd.polygon([(CX+30,link_y-5),(CX+35,link_y),(CX+30,link_y+5),(CX+25,link_y)],fill=(212,175,55,110))
+# 中间大菱形
+ldd.polygon([(CX,link_y-12),(CX+12,link_y),(CX,link_y+12),(CX-12,link_y)],fill=(212,175,55,130))
+ldd.polygon([(CX,link_y-6),(CX+6,link_y),(CX,link_y+6),(CX-6,link_y)],fill=(247,224,138,90))
+
+# 底部 QR 上方衔接花纹
+qr_link_y=QR_TOP-18
+ldd.line([(100,qr_link_y),(CX-30,qr_link_y)],fill=(212,175,55,70),width=1)
+ldd.line([(CX+30,qr_link_y),(W-100,qr_link_y)],fill=(212,175,55,70),width=1)
+ldd.polygon([(CX,qr_link_y-8),(CX+8,qr_link_y),(CX,qr_link_y+8),(CX-8,qr_link_y)],fill=(212,175,55,110))
+
+canvas.alpha_composite(side_deco,(0,0))
+canvas.alpha_composite(mid_deco,(0,0))
+canvas.alpha_composite(link_deco,(0,0))
+
 def card_pos(i):
     r,c=divmod(i,COLS)
     x=MARGIN_X+c*(CARD_W+GAP)
@@ -281,7 +335,7 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """透明玻璃卡片：无底色 + 细描高级边框 + 顶部内缘高光"""
+    """透明玻璃卡片：半透背景 + 细描金边 + 顶部内缘高光"""
     R=34  # 圆角
 
     # ===== 1. 底投影（干净，卡片正下方）=====
@@ -292,29 +346,29 @@ def glass_card(x,y,w,h,i):
     shadow=shadow.filter(ImageFilter.GaussianBlur(14))
     canvas.alpha_composite(shadow,(x-10,y))
 
-    # ===== 2. 无边框纯玻璃底（背景直接透出，仅加极淡色调让文字可读）=====
+    # ===== 2. 半透明玻璃底（深色半透，背景 Baroque 花纹透出，文字可读）=====
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
-    # 极淡的深色调（alpha 28，几乎全透，让 Baroque 花纹直接透过）
-    tint=Image.new('RGBA',(w,h),(18,14,22,28))
+    # 半透明深色调（alpha 45，让背景花纹隐约可见但文字清晰）
+    tint=Image.new('RGBA',(w,h),(15,10,18,45))
     tint.putalpha(rmask)
     canvas.alpha_composite(tint,(x,y))
 
-    # ===== 3. 高级细描金边（双层：外 2px 主金 + 内 1px 亮金细描，精致高级）=====
-    # 外层主金边 2px（上亮下暗渐变）
+    # ===== 3. 描金细边框（1px 主金 + 1px 亮金内描，精致高级）=====
+    # 外层主金边 1px（上亮下暗渐变，更细）
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        ca=int(240-tt*70)
+        ca=int(230-tt*60)
         bdr.line([(0,yy),(w,yy)],fill=(247,224,138,ca))
     ring=Image.new('L',(w,h),0)
-    ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=2)
+    ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=1)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
-    # 内层细描边 1px（纯亮金色，贴主金边内侧，精致感）
+    # 内层细描边 1px（纯亮金色，精致感）
     inner_ring=Image.new('L',(w,h),0)
-    ImageDraw.Draw(inner_ring).rounded_rectangle((3,3,w-3,h-3),radius=R-2,fill=0,outline=255,width=1)
+    ImageDraw.Draw(inner_ring).rounded_rectangle((2,2,w-2,h-2),radius=R-1,fill=0,outline=255,width=1)
     inner_border=Image.new('RGBA',(w,h),(255,240,180,0))
     inner_border.putalpha(inner_ring)
     canvas.alpha_composite(inner_border,(x,y))
