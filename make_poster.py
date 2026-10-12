@@ -65,7 +65,7 @@ CREAM=(244,236,216); MUTED=(185,169,138); DIM=(92,80,64)
 
 base=Image.open(SRC).convert('RGBA')
 canvas=base.copy()
-ov=Image.new('RGBA',(W,H),(8,6,3,120))
+ov=Image.new('RGBA',(W,H),(8,6,3,60))
 canvas=Image.alpha_composite(canvas,ov)
 draw=ImageDraw.Draw(canvas,'RGBA')
 
@@ -254,7 +254,7 @@ QR_TOP=GRID_BOTTOM+55
 card_bg=Image.new('RGBA',(W,H),(0,0,0,0))
 cbd=ImageDraw.Draw(card_bg)
 # 卡片区域整体底色（极淡，不再是黑色填充）
-cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(212,175,55,18))
+cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(212,175,55,10))
 # 暗金色网格线
 grid_step=36
 for gy in range(GRID_TOP-40,GRID_BOTTOM+40,grid_step):
@@ -346,13 +346,10 @@ def glass_card(x,y,w,h,i):
     shadow=shadow.filter(ImageFilter.GaussianBlur(14))
     canvas.alpha_composite(shadow,(x-10,y))
 
-    # ===== 2. 半透明玻璃底（几乎全透，背景 Baroque 花纹直接透出）=====
+    # ===== 2. 完全透明玻璃底（无任何颜色填充，背景 Baroque 花纹直接透出）=====
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
-    # 极淡的深色调（alpha 15，几乎全透，仅让文字有微弱底色区分）
-    tint=Image.new('RGBA',(w,h),(15,10,18,15))
-    tint.putalpha(rmask)
-    canvas.alpha_composite(tint,(x,y))
+    # 不再添加 tint 颜色层，卡片完全透明
 
     # ===== 3. 描金细边框（1px 主金 + 1px 亮金内描，精致高级）=====
     # 外层主金边 1px（上亮下暗渐变，更细）
