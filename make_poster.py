@@ -335,49 +335,52 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """透明玻璃卡片：半透背景 + 细描金边 + 顶部内缘高光"""
-    R=34  # 圆角
+    """参考图卡片样式：深色半透底 + 细金边 + 圆角 + 顶部高光"""
+    R=28  # 圆角（参考图偏圆润）
 
-    # ===== 1. 底投影（干净，卡片正下方）=====
-    sh=48
-    shadow=Image.new('RGBA',(w+20,h+sh+10),(0,0,0,0))
-    sd=ImageDraw.Draw(shadow)
-    sd.rounded_rectangle((10,h,w+10,h+sh),radius=R,fill=(0,0,0,50))
-    shadow=shadow.filter(ImageFilter.GaussianBlur(14))
-    canvas.alpha_composite(shadow,(x-10,y))
-
-    # ===== 2. 卡片本身完全透明（无任何颜色填充，背景直接透出）=====
+    # ===== 1. 深色半透明底（参考图核心：深炭灰半透，背景花纹隐约透出）=====
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
+    # 深炭灰渐变（上稍亮下稍暗，参考图的立体感）
+    base=Image.new('RGBA',(w,h),(0,0,0,0))
+    bd=ImageDraw.Draw(base)
+    for yy in range(h):
+        tt=yy/max(h-1,1)
+        a=int(68-6*tt)  # 上68下62，整体半透
+        r=int(22+4*tt); g=int(18+3*tt); b=int(26+5*tt)
+        bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
+    base.putalpha(rmask)
+    canvas.alpha_composite(base,(x,y))
 
-    # ===== 3. 描金细边框（1px 主金 + 1px 亮金内描，精致高级）=====
-    # 外层主金边 1px（上亮下暗渐变，更细）
+    # ===== 2. 顶部内缘高光（参考图卡片顶部有微妙反光）=====
+    top_hl=Image.new('RGBA',(w,h),(0,0,0,0))
+    thd=ImageDraw.Draw(top_hl)
+    for yy in range(int(h*0.05)):
+        tt=yy/(h*0.05)
+        a=int(55*(1-tt)**2)
+        thd.line([(4,yy),(w-4,yy)],fill=(255,240,180,a))
+    top_hl.putalpha(rmask)
+    canvas.alpha_composite(top_hl,(x,y))
+
+    # ===== 3. 细金边（参考图：单层 1.5px 金边，上亮下暗自然立体）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        ca=int(230-tt*60)
+        ca=int(225-tt*55)
         bdr.line([(0,yy),(w,yy)],fill=(247,224,138,ca))
     ring=Image.new('L',(w,h),0)
-    ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=1)
+    ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=2)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
-    # 内层细描边 1px（纯亮金色，精致感）
-    inner_ring=Image.new('L',(w,h),0)
-    ImageDraw.Draw(inner_ring).rounded_rectangle((2,2,w-2,h-2),radius=R-1,fill=0,outline=255,width=1)
-    inner_border=Image.new('RGBA',(w,h),(255,240,180,0))
-    inner_border.putalpha(inner_ring)
-    canvas.alpha_composite(inner_border,(x,y))
 
-    # ===== 4. 顶部内缘高光（水晶棱边反光）=====
-    top_hl=Image.new('RGBA',(w,h),(0,0,0,0))
-    thd=ImageDraw.Draw(top_hl)
-    for yy in range(int(h*0.04)):
-        tt=yy/(h*0.04)
-        a=int(60*(1-tt)**2)
-        thd.line([(4,yy),(w-4,yy)],fill=(255,240,180,a))
-    top_hl.putalpha(rmask)
-    canvas.alpha_composite(top_hl,(x,y))
+    # ===== 4. 卡片底部投影（参考图几乎无投影，极淡）=====
+    sh=30
+    shadow=Image.new('RGBA',(w+16,h+sh+6),(0,0,0,0))
+    sd=ImageDraw.Draw(shadow)
+    sd.rounded_rectangle((8,h,w+8,h+sh),radius=R,fill=(0,0,0,30))
+    shadow=shadow.filter(ImageFilter.GaussianBlur(12))
+    canvas.alpha_composite(shadow,(x-8,y))
 
 for i,t in enumerate(TIERS):
     x,y=card_pos(i)
