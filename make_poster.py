@@ -315,9 +315,8 @@ def glass_card(x,y,w,h,i):
     # 内层细描边 1px（纯亮金色，贴主金边内侧，精致感）
     inner_ring=Image.new('L',(w,h),0)
     ImageDraw.Draw(inner_ring).rounded_rectangle((3,3,w-3,h-3),radius=R-2,fill=0,outline=255,width=1)
-    inner_border=Image.new('RGBA',(w,h),(0,0,0,0))
-    ibd=ImageDraw.Draw(inner_border)
-    ibd.paste((255,240,180,180),(0,0),inner_ring)
+    inner_border=Image.new('RGBA',(w,h),(255,240,180,0))
+    inner_border.putalpha(inner_ring)
     canvas.alpha_composite(inner_border,(x,y))
 
     # ===== 4. 顶部内缘高光（水晶棱边反光）=====
