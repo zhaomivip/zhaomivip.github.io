@@ -297,11 +297,11 @@ sdd=ImageDraw.Draw(side_deco)
 for yy in range(GRID_TOP+30,GRID_BOTTOM-30,80):
     # 左侧：3 个小点 + 细横线
     sdd.line([(15,yy),(40,yy)],fill=(212,175,55,35),width=1)
-    sdd.ellipse((42,yy-3),(48,yy+3),fill=(212,175,55,80))
+    sdd.ellipse(xy=(42,yy-3,48,yy+3),fill=(212,175,55,80))
     sdd.line([(50,yy),(75,yy)],fill=(212,175,55,35),width=1)
     # 右侧：对称
     sdd.line([(W-75,yy),(W-50,yy)],fill=(212,175,55,35),width=1)
-    sdd.ellipse((W-48,yy-3),(W-42,yy+3),fill=(212,175,55,80))
+    sdd.ellipse(xy=(W-48,yy-3,W-42,yy+3),fill=(212,175,55,80))
     sdd.line([(W-40,yy),(W-15,yy)],fill=(212,175,55,35),width=1)
 
 # 顶部标题区与卡片之间的衔接花纹
