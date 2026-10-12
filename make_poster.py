@@ -258,10 +258,10 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """高透玻璃卡片：干净纯色底 + 左上扫光 + 金边 + 内缘高光"""
+    """透明玻璃卡片：纯色底 + 金边 + 顶部内缘高光"""
     R=34  # 圆角
 
-    # ===== 1. 底投影（干净，卡片正下方，不脏）=====
+    # ===== 1. 底投影（干净，卡片正下方）=====
     sh=48
     shadow=Image.new('RGBA',(w+20,h+sh+10),(0,0,0,0))
     sd=ImageDraw.Draw(shadow)
@@ -269,13 +269,12 @@ def glass_card(x,y,w,h,i):
     shadow=shadow.filter(ImageFilter.GaussianBlur(14))
     canvas.alpha_composite(shadow,(x-10,y))
 
-    # ===== 2. 干净纯色底（深炭灰半透，背景清晰透出）=====
+    # ===== 2. 纯色底（半透深炭灰，背景图案清晰透出）=====
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
-    # 垂直极微渐变：顶部稍深，底部稍亮（3D 立体感）
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(85-12*tt)        # alpha 85→73，半透让背景图案干净透出
+        a=int(85-12*tt)
         r=int(20+10*tt); g=int(16+8*tt); b=int(24+12*tt)
         bd.line([(0,yy),(w,yy)],fill=(r,g,b,a))
     rmask=Image.new('L',(w,h),0)
@@ -283,35 +282,19 @@ def glass_card(x,y,w,h,i):
     base.putalpha(rmask)
     canvas.alpha_composite(base,(x,y))
 
-    # ===== 3. 左上扫光（暖白色对角扫过，水晶反光）=====
-    sweep=Image.new('RGBA',(w,h),(0,0,0,0))
-    swd=ImageDraw.Draw(sweep)
-    for yy in range(h):
-        for xx in range(w):
-            diag_y=xx*h/w
-            dist=abs(yy-diag_y)
-            d_norm=dist/(h*0.55)
-            prog=(xx+yy)/(w+h)
-            if prog<0.72 and d_norm<1.0:
-                intensity=(1-prog/0.72)*(1-d_norm)**1.0
-                a=int(130*intensity)
-                swd.point((xx,yy),fill=(255,248,220,a))
-    sweep.putalpha(rmask)
-    canvas.alpha_composite(sweep,(x,y))
-
-    # ===== 4. 金边（2px，顶部微亮、底部微暗，自然立体感）=====
+    # ===== 3. 金边（2px，顶部微亮、底部微暗，自然立体感）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        ca=int(240-tt*70)       # 顶部 240 → 底部 170
+        ca=int(240-tt*70)
         bdr.line([(0,yy),(w,yy)],fill=(247,224,138,ca))
     ring=Image.new('L',(w,h),0)
     ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=2)
     border.putalpha(ring)
     canvas.alpha_composite(border,(x,y))
 
-    # ===== 5. 顶部内缘高光（水晶棱边反光）=====
+    # ===== 4. 顶部内缘高光（水晶棱边反光）=====
     top_hl=Image.new('RGBA',(w,h),(0,0,0,0))
     thd=ImageDraw.Draw(top_hl)
     for yy in range(int(h*0.04)):
