@@ -272,12 +272,12 @@ def glass_card(x,y,w,h,i):
     shadow.putalpha(smask)
     canvas.alpha_composite(shadow,(x-30,y))
 
-    # ===== 2. 半透明半黑底（无纯黑底色，背景清晰透出）=====
+    # ===== 2. 半透明半黑底（半透：背景可透出，内容清晰可读）=====
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(46+12*(0.5-tt))   # alpha 40~52（极透：背景清晰可见）
+        a=int(68+14*(0.5-tt))   # alpha 61~75（半透：背景隐约可见，内容清晰）
         bd.line([(0,yy),(w,yy)],fill=(0,0,0,a))
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
@@ -300,11 +300,10 @@ def glass_card(x,y,w,h,i):
     sweep.putalpha(rmask)
     canvas.alpha_composite(sweep,(x,y))
 
-    # ===== 4. 1px 极简金边（纯金细线，无渐变，高级简约）=====
+    # ===== 4. 2px 极简金边（统一纯色，无渐变，高级简约）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
-    # 统一金色细线（GOLD 247,224,138，略带不透明）
-    bdr.rounded_rectangle((0,0,w,h),radius=R,outline=(230,200,110,200),width=1)
+    bdr.rounded_rectangle((0,0,w,h),radius=R,outline=(230,200,110,220),width=2)
     canvas.alpha_composite(border,(x,y))
 
 for i,t in enumerate(TIERS):
