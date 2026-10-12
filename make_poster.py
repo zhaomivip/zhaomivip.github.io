@@ -246,31 +246,31 @@ TIERS=[
 # 卡片几何（卡片网格整体上移）
 HEADER_BOTTOM=dy+16
 _QR_EST=H-QR_PANEL_H-30
-GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-50  # 整体上移 50px
+GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-80  # 上移 80px（更明显）
 GRID_BOTTOM=GRID_TOP+GRID_H
 QR_TOP=GRID_BOTTOM+55
 
-# ===== 卡片区域暗纹背景（暗金色细微网格 + 对角暗纹，高级感）=====
+# ===== 卡片区域暗纹背景（明显可见的暗金色网格 + 对角暗纹 + 聚焦底色）=====
 card_bg=Image.new('RGBA',(W,H),(0,0,0,0))
 cbd=ImageDraw.Draw(card_bg)
-# 暗金色网格线（极淡）
-grid_step=28
+# 卡片区域整体暗底色（让卡片与背景分层，聚焦感）
+cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(6,3,2,70))
+# 暗金色网格线（加强：alpha 50~60，让你一眼能看见）
+grid_step=36
 for gy in range(GRID_TOP-40,GRID_BOTTOM+40,grid_step):
-    cbd.line([(0,gy),(W,gy)],fill=(212,175,55,18),width=1)
+    cbd.line([(0,gy),(W,gy)],fill=(212,175,55,50),width=1)
 for gx in range(0,W,grid_step):
-    cbd.line([(gx,GRID_TOP-40),(gx,GRID_BOTTOM+40)],fill=(212,175,55,14),width=1)
-# 对角细暗纹（增加层次）
-for k in range(-GRID_BOTTOM-200,W+GRID_BOTTOM+200,6):
-    cbd.line([(k,GRID_TOP-60),(k+GRID_H//2,GRID_BOTTOM+60)],fill=(212,175,55,6),width=1)
-# 卡片区域整体极暗底色（让卡片区域更聚焦）
-cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(8,5,3,40))
+    cbd.line([(gx,GRID_TOP-40),(gx,GRID_BOTTOM+40)],fill=(212,175,55,40),width=1)
+# 对角暗纹（加强：alpha 20）
+for k in range(-GRID_BOTTOM-200,W+GRID_BOTTOM+200,8):
+    cbd.line([(k,GRID_TOP-60),(k+GRID_H//2,GRID_BOTTOM+60)],fill=(212,175,55,20),width=1)
 # 卡片区域顶部渐隐
 for yy in range(50):
-    a=int(40*(1-yy/50))
+    a=int(70*(1-yy/50))
     cbd.rectangle([(0,GRID_TOP-50+yy),(W,GRID_TOP-50+yy)],fill=(0,0,0,a))
 # 卡片区域底部渐隐
 for yy in range(30):
-    a=int(30*(yy/30))
+    a=int(50*(yy/30))
     cbd.rectangle([(0,GRID_BOTTOM+yy),(W,GRID_BOTTOM+yy)],fill=(0,0,0,a))
 canvas.alpha_composite(card_bg,(0,0))
 
