@@ -373,8 +373,8 @@ for i,t in enumerate(TIERS):
     draw.text((cx,y+30),tier_title,font=ttf,fill=(0,0,0,0),anchor='ma',stroke_width=2,stroke_fill=(110,82,18,220))
     gold_text(cx,y+28,tier_title,ttf,'ma')
     _,gnh=tsize(tier_title,ttf)
-    # 财富值（金色大字）
-    txt(cx,y+28+gnh+8,f'财富值 {t["wealth"]:,}',CJK(23,'Bold'),GOLD_HI,'ma',shadow=True)
+    # 身价值（金色大字）
+    txt(cx,y+28+gnh+8,f'身价值 {t["wealth"]:,}',CJK(23,'Bold'),GOLD_HI,'ma',shadow=True)
     # 分隔线
     divy=y+28+gnh+8+32
     draw.line([(x+28,divy),(x+CARD_W-28,divy)],fill=(212,175,55,140),width=1)
