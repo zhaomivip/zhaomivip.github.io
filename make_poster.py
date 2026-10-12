@@ -122,30 +122,21 @@ draw.line([(CX-ew//2-50,ey_y+eh//2),(CX-ew//2-14,ey_y+eh//2)],fill=(212,175,55,2
 draw.line([(CX+ew//2+14,ey_y+eh//2),(CX+ew//2+50,ey_y+eh//2)],fill=(212,175,55,200),width=2)
 
 title='着迷黑金贵族体系'
-tf=ART(156,'xiaowei')   # 站酷小薇艺术字体（加大）
+tf=ART(156,'xiaowei')   # 站酷小薇艺术字体
 ty=ey_y+eh+200           # 再下移两个行高位置
-SPACING=14
-title_w=sum(tsize(ch,tf)[0] for ch in title)+SPACING*(len(title)-1)
-tx0=CX-title_w//2
-# 标题金色光晕
+
+# 标题金色光晕（整体绘制）
 glow=Image.new('RGBA',(W,460),(0,0,0,0))
 gd=ImageDraw.Draw(glow)
-gx=tx0
-for ch in title:
-    cw,_=tsize(ch,tf)
-    gd.text((gx,230-ty),ch,font=tf,fill=(212,175,55,140),anchor='la')
-    gx+=cw+SPACING
+tw,th=tsize(title,tf)
+gd.text((CX-tw//2,230-ty),title,font=tf,fill=(212,175,55,140),anchor='la')
 glow=glow.filter(ImageFilter.GaussianBlur(28))
 canvas.alpha_composite(glow,(0,ty-230))
-# 逐字绘制：投影 + 金色描边 + 金色渐变填充
-gx=tx0
-for ch in title:
-    cw,chh=tsize(ch,tf)
-    ccx=gx+cw//2
-    draw.text((ccx+4,ty+4),ch,font=tf,fill=(0,0,0,175),anchor='ma')
-    draw.text((ccx,ty),ch,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=4,stroke_fill=(110,82,18,235))
-    gold_text(ccx,ty,ch,tf,'ma')
-    gx+=cw+SPACING
+
+# 整体一次绘制：投影 + 金色描边 + 金色渐变填充（统一效果）
+draw.text((CX+4,ty+4),title,font=tf,fill=(0,0,0,175),anchor='ma')
+draw.text((CX,ty),title,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=4,stroke_fill=(110,82,18,235))
+gold_text(CX,ty,title,tf,'ma')
 
 sub_left='九阶黑金'
 sub_right='逐档尊贵'
