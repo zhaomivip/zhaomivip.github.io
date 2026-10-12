@@ -133,9 +133,9 @@ gd.text((CX-tw//2,230-ty),title,font=tf,fill=(212,175,55,140),anchor='la')
 glow=glow.filter(ImageFilter.GaussianBlur(28))
 canvas.alpha_composite(glow,(0,ty-230))
 
-# 整体一次绘制：投影 + 金色描边 + 金色渐变填充（统一效果）
-draw.text((CX+4,ty+4),title,font=tf,fill=(0,0,0,175),anchor='ma')
-draw.text((CX,ty),title,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=4,stroke_fill=(110,82,18,235))
+# 整体一次绘制：投影(轻) + 金色描边(细) + 金色渐变填充（无重影）
+draw.text((CX+2,ty+2),title,font=tf,fill=(0,0,0,120),anchor='ma')
+draw.text((CX,ty),title,font=tf,fill=(255,238,168,0),anchor='ma',stroke_width=2,stroke_fill=(110,82,18,235))
 gold_text(CX,ty,title,tf,'ma')
 
 sub_left='九阶黑金'
