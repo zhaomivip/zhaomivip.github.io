@@ -390,25 +390,25 @@ for i,t in enumerate(TIERS):
 
     # 头部：黑金 Ⅰ（大字体饱满 + 金色描边）
     tier_title=f'黑金 {t["id"]}'
-    ttf=CJK(62,'Black')
+    ttf=CJK(60,'Black')
     draw.text((cx,y+32),tier_title,font=ttf,fill=(0,0,0,0),anchor='ma',stroke_width=2,stroke_fill=(110,82,18,220))
     gold_text(cx,y+30,tier_title,ttf,'ma')
     _,gnh=tsize(tier_title,ttf)
-    # 身价值（金色大字）
-    txt(cx,y+30+gnh+10,f'身价值 {t["wealth"]:,}',CJK(26,'Bold'),GOLD_HI,'ma',shadow=True)
-    # 分隔线
-    divy=y+30+gnh+10+34
+    # 身价值（下移10px）
+    txt(cx,y+30+gnh+20,f'身价值 {t["wealth"]:,}',CJK(30,'Bold'),GOLD_HI,'ma',shadow=True)
+    # 分隔线（下移20px）
+    divy=y+30+gnh+20+44
     draw.line([(x+30,divy),(x+CARD_W-30,divy)],fill=(212,175,55,140),width=1)
     draw.ellipse([(cx-4,divy-4),(cx+4,divy+4)],fill=(212,175,55,220))
 
-    # 四大类权益（均匀分布、统一圆润字体、加大饱满）
+    # 四大类权益（统一字号30，行间距6px）
     cat_count=len(t['cats'])
     avail_h=y+CARD_H-divy-14
     per_h=avail_h//cat_count
-    cat_font=CJK(27,'Bold')      # 大类名加大
-    cnt_font=CJK(18,'Bold')      # 项数加大
-    rep_font=CJK(20,'Medium')    # 代表权益加大
-    chk_font=CJK(26,'Bold')      # 对勾加大
+    cat_font=CJK(30,'Bold')      # 大类名统一30
+    cnt_font=CJK(30,'Bold')      # 项数统一30
+    rep_font=CJK(30,'Medium')    # 代表权益统一30
+    chk_font=CJK(30,'Bold')      # 对勾统一30
     for ci,(cat_name,count,reps) in enumerate(t['cats']):
         cy=divy+16+ci*per_h
         # 大类行
@@ -421,9 +421,9 @@ for i,t in enumerate(TIERS):
             txt(x+54,cy,cat_name,cat_font,DIM,'la')
             txt(x+CARD_W-22,cy,'—',cnt_font,DIM,'ra')
         _,bh1=tsize(cat_name,cat_font)
-        # 代表权益（饱满分布，加大间距）
+        # 代表权益（行间距6px）
         rep='  ·  '.join(reps)
-        txt(x+54,cy+bh1+10,rep,rep_font,CREAM,'la',shadow=True)
+        txt(x+54,cy+bh1+6,rep,rep_font,CREAM,'la',shadow=True)
 
 # ===== 底部二维码区域 =====
 qr_panel_h=QR_PANEL_H
