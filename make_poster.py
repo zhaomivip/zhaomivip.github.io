@@ -258,7 +258,7 @@ def card_pos(i):
     return x,y
 
 def glass_card(x,y,w,h,i):
-    """水晶玻璃卡片：高透玻璃底 + 左上扫光 + 细金描边 + 内边缘光晕 + 柔和投影"""
+    """水晶玻璃卡片：半透明半黑底 + 左上扫光 + 1px 极简金边 + 柔和投影"""
     R=34  # 圆角
 
     # ===== 1. 柔和下投影（悬浮感，极淡）=====
@@ -272,67 +272,40 @@ def glass_card(x,y,w,h,i):
     shadow.putalpha(smask)
     canvas.alpha_composite(shadow,(x-30,y))
 
-    # ===== 2. 高透明玻璃底（深色玻璃，背景清晰透出）=====
+    # ===== 2. 半透明半黑底（无纯黑底色，背景清晰透出）=====
     base=Image.new('RGBA',(w,h),(0,0,0,0))
     bd=ImageDraw.Draw(base)
     for yy in range(h):
         tt=yy/max(h-1,1)
-        a=int(72+18*(0.5-tt))   # alpha 63~81（够透：背景能看见，卡片也有存在感）
-        bd.line([(0,yy),(w,yy)],fill=(22,18,26,a))
-    # 圆角遮罩
+        a=int(46+12*(0.5-tt))   # alpha 40~52（极透：背景清晰可见）
+        bd.line([(0,yy),(w,yy)],fill=(0,0,0,a))
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
     base.putalpha(rmask)
     canvas.alpha_composite(base,(x,y))
 
-    # ===== 3. 左上扫光（暖白色对角扫过，水晶反光核心）=====
+    # ===== 3. 左上扫光（暖白色对角扫过）=====
     sweep=Image.new('RGBA',(w,h),(0,0,0,0))
     swd=ImageDraw.Draw(sweep)
     for yy in range(h):
         for xx in range(w):
-            # 主对角线方程 y = x*h/w
             diag_y=xx*h/w
             dist=abs(yy-diag_y)
-            # 到对角线距离归一化（沿宽方向）
-            d_norm=dist/(h*0.55)   # 扫光带宽度扩大
-            # 沿对角线进度
+            d_norm=dist/(h*0.55)
             prog=(xx+yy)/(w+h)
-            # 左上三角区：prog 小（左上）且 d_norm 小（靠近对角线）
             if prog<0.70 and d_norm<1.0:
                 intensity=(1-prog/0.70)*(1-d_norm)**1.0
-                a=int(180*intensity)   # 加强：max 180
+                a=int(150*intensity)
                 swd.point((xx,yy),fill=(255,248,220,a))
     sweep.putalpha(rmask)
     canvas.alpha_composite(sweep,(x,y))
 
-    # ===== 4. 细金描边（2px 精致金边，上亮下暗渐变）=====
+    # ===== 4. 1px 极简金边（纯金细线，无渐变，高级简约）=====
     border=Image.new('RGBA',(w,h),(0,0,0,0))
     bdr=ImageDraw.Draw(border)
-    for yy in range(h):
-        tt=yy/max(h-1,1)
-        cr=int(GOLD_HI[0]+(GOLD_DK[0]-GOLD_HI[0])*tt)
-        cg=int(GOLD_HI[1]+(GOLD_DK[1]-GOLD_HI[1])*tt)
-        cb=int(GOLD_HI[2]+(GOLD_DK[2]-GOLD_HI[2])*tt)
-        ca=int(210-tt*50)
-        bdr.line([(0,yy),(w,yy)],fill=(cr,cg,cb,ca))
-    ring=Image.new('L',(w,h),0)
-    ImageDraw.Draw(ring).rounded_rectangle((0,0,w,h),radius=R,fill=0,outline=255,width=2)
-    border.putalpha(ring)
+    # 统一金色细线（GOLD 247,224,138，略带不透明）
+    bdr.rounded_rectangle((0,0,w,h),radius=R,outline=(230,200,110,200),width=1)
     canvas.alpha_composite(border,(x,y))
-
-    # ===== 5. 内边缘光晕（顶部 + 左侧，水晶棱边反光）=====
-    inner_glow=Image.new('RGBA',(w,h),(0,0,0,0))
-    igd=ImageDraw.Draw(inner_glow)
-    for yy in range(int(h*0.06)):
-        tt=yy/(h*0.06)
-        a=int(75*(1-tt)**1.8)
-        igd.line([(6,yy),(w-6,yy)],fill=(255,238,168,a))
-    for xx in range(int(w*0.05)):
-        tt=xx/(w*0.05)
-        a=int(55*(1-tt)**1.8)
-        igd.line([(xx,6),(xx,h-6)],fill=(255,238,168,a))
-    inner_glow.putalpha(rmask)
-    canvas.alpha_composite(inner_glow,(x,y))
 
 for i,t in enumerate(TIERS):
     x,y=card_pos(i)
