@@ -447,7 +447,7 @@ pbdr.putalpha(pring)
 canvas.alpha_composite(pbdr,(panel_x1,qr_top))
 
 # 美化二维码：白色圆角底 + 金色渐变描边 + 外发光（放大）
-qr_size=200
+qr_size=250
 qr_img=Image.open(QR).convert('RGBA').resize((qr_size,qr_size),Image.LANCZOS)
 pad=18
 qb_w=qr_size+2*pad
