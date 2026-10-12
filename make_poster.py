@@ -243,35 +243,35 @@ TIERS=[
            ('拍卖特权',5,['保密出价','拍卖 5折'])]},
 ]
 
-# 卡片几何（卡片网格下移 300px，从居中位置）
+# 卡片几何（卡片网格下移 200px，从居中位置）
 HEADER_BOTTOM=dy+16
 _QR_EST=H-QR_PANEL_H-30
-GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-300  # 下移 300px（原-600→-300）
+GRID_TOP=HEADER_BOTTOM+((_QR_EST-HEADER_BOTTOM)-GRID_H)//2-100  # 下移 200px（原-300→-100）
 GRID_BOTTOM=GRID_TOP+GRID_H
 QR_TOP=GRID_BOTTOM+55
 
-# ===== 卡片区域暗纹背景（明显的暗金色网格 + 对角暗纹 + 聚焦底色）=====
+# ===== 卡片区域暗纹背景（明显的暗金色网格 + 对角暗纹，去黑色填充）=====
 card_bg=Image.new('RGBA',(W,H),(0,0,0,0))
 cbd=ImageDraw.Draw(card_bg)
-# 卡片区域整体暗底色
-cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(5,2,1,85))
-# 暗金色网格线（加强）
+# 卡片区域整体底色（极淡，不再是黑色填充）
+cbd.rectangle([(0,GRID_TOP-50),(W,GRID_BOTTOM+30)],fill=(212,175,55,18))
+# 暗金色网格线
 grid_step=36
 for gy in range(GRID_TOP-40,GRID_BOTTOM+40,grid_step):
     cbd.line([(0,gy),(W,gy)],fill=(212,175,55,75),width=1)
 for gx in range(0,W,grid_step):
     cbd.line([(gx,GRID_TOP-40),(gx,GRID_BOTTOM+40)],fill=(212,175,55,60),width=1)
-# 对角暗纹（加强）
+# 对角暗纹
 for k in range(-GRID_BOTTOM-200,W+GRID_BOTTOM+200,8):
     cbd.line([(k,GRID_TOP-60),(k+GRID_H//2,GRID_BOTTOM+60)],fill=(212,175,55,35),width=1)
-# 卡片区域顶部渐隐
+# 卡片区域顶部渐隐（去黑色）
 for yy in range(50):
-    a=int(85*(1-yy/50))
-    cbd.rectangle([(0,GRID_TOP-50+yy),(W,GRID_TOP-50+yy)],fill=(0,0,0,a))
-# 卡片区域底部渐隐
+    a=int(18*(1-yy/50))
+    cbd.rectangle([(0,GRID_TOP-50+yy),(W,GRID_TOP-50+yy)],fill=(212,175,55,a))
+# 卡片区域底部渐隐（去黑色）
 for yy in range(30):
-    a=int(60*(yy/30))
-    cbd.rectangle([(0,GRID_BOTTOM+yy),(W,GRID_BOTTOM+yy)],fill=(0,0,0,a))
+    a=int(12*(yy/30))
+    cbd.rectangle([(0,GRID_BOTTOM+yy),(W,GRID_BOTTOM+yy)],fill=(212,175,55,a))
 canvas.alpha_composite(card_bg,(0,0))
 
 # ===== 卡片区域中间装饰花纹（填补背景空白，Baroque 风格暗金花纹）=====
@@ -346,11 +346,11 @@ def glass_card(x,y,w,h,i):
     shadow=shadow.filter(ImageFilter.GaussianBlur(14))
     canvas.alpha_composite(shadow,(x-10,y))
 
-    # ===== 2. 半透明玻璃底（深色半透，背景 Baroque 花纹透出，文字可读）=====
+    # ===== 2. 半透明玻璃底（几乎全透，背景 Baroque 花纹直接透出）=====
     rmask=Image.new('L',(w,h),0)
     ImageDraw.Draw(rmask).rounded_rectangle((0,0,w,h),radius=R,fill=255)
-    # 半透明深色调（alpha 45，让背景花纹隐约可见但文字清晰）
-    tint=Image.new('RGBA',(w,h),(15,10,18,45))
+    # 极淡的深色调（alpha 15，几乎全透，仅让文字有微弱底色区分）
+    tint=Image.new('RGBA',(w,h),(15,10,18,15))
     tint.putalpha(rmask)
     canvas.alpha_composite(tint,(x,y))
 
